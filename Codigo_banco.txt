@@ -1,0 +1,54 @@
+<<<<<<< HEAD
+CREATE TABLE Pessoa (
+    id SERIAL PRIMARY KEY,
+    nome_completo VARCHAR(255) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    telefone VARCHAR(11) NOT NULL,
+    endereco TEXT NOT NULL,
+    email TEXT
+);
+
+
+CREATE TABLE Usuario (
+    id_pessoa INT REFERENCES Pessoa(id) ON DELETE CASCADE,
+    login VARCHAR(255) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL
+);
+
+
+
+CREATE TABLE Historico_acao(
+    id SERIAL PRIMARY KEY,
+    id_responsavel INT REFERENCES Pessoa(id) ON DELETE CASCADE,
+    acao TEXT NOT NULL,
+    data_hora_acao TIMESTAMP NOT NULL
+	--gesto NOT NULL
+=======
+CREATE TABLE Pessoa (
+    id SERIAL PRIMARY KEY,
+    nome_completo VARCHAR(255) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    telefone VARCHAR(11) NOT NULL,
+    endereco TEXT NOT NULL,
+    email TEXT
+);
+
+
+CREATE TABLE Usuario (
+    id_pessoa INT REFERENCES Pessoa(id) ON DELETE CASCADE,
+    login VARCHAR(255) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL
+);
+
+
+
+CREATE TABLE Historico_acao(
+    id SERIAL PRIMARY KEY,
+    id_responsavel INT REFERENCES Pessoa(id) ON DELETE CASCADE,
+    acao TEXT NOT NULL,
+    data_hora_acao TIMESTAMP NOT NULL
+	--gesto NOT NULL
+>>>>>>> 2cda65454b640299702893de01a475eb01697e5c
+);
