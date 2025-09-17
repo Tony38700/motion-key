@@ -1,95 +1,93 @@
 import cv2
 import numpy as np
-import HandTrackingModule as htm
 import time
 import autopy
+from hand_tracking_module import HandDetector
 
-###configurações/variaveis####
-wCam, hCam = 640, 480 #resolução da camera
-frameR = 100 # redução de frame
-smoothening = 7 #suavização do movimento dos dedos
-#webcam
-cap = cv2.VideoCapture(0) #0 - câmera padrão; 1 - câmera externa
-cap.set(3, wCam) #largura
-cap.set(4, hCam) #altura
-#tempo e detecção
-pTime = 0 #variavel tempo do FPS
-detector = htm.handDetector(maxHands=1) #uma mão por vez
-#tela
-wScr, hScr = autopy.screen.size() #capturar a resolução da tela
-    #print("Resolução da tela:", wScr, hScr)
-plocX, plocY = 0, 0 #posição anterior do cursor (suavização)
-clocX, clocY = 0, 0 #posição atual do cursor (suavização)
-##############################
+# Configurações/constantes
+CAM_WIDTH, CAM_HEIGHT = 640, 480  # resolução da câmera
+FRAME_REDUCTION = 100  # redução de frame
+SMOOTHENING = 7  # suavização do movimento dos dedos
+
+# Webcam
+camera = cv2.VideoCapture(0)  # 0 - câmera padrão; 1 - câmera externa
+camera.set(3, CAM_WIDTH)  # largura
+camera.set(4, CAM_HEIGHT)  # altura
+
+# Tempo e detecção
+prev_time = 0  # variável tempo do FPS
+hand_detector = HandDetector(MAX_HANDS=1)  # uma mão por vez
+
+# Tela
+screen_width, screen_height = autopy.screen.size()  # capturar a resolução da tela
+prev_cursor_x, prev_cursor_y = 0, 0  # posição anterior do cursor (suavização)
+curr_cursor_x, curr_cursor_y = 0, 0  # posição atual do cursor (suavização)
 
 # Verifica se a câmera abriu corretamente
-if not cap.isOpened():
+if not camera.isOpened():
     print("Não foi possível abrir a câmera.")
     exit()
 
 while True:
-    #1.Encontrar pontos de referência para as mãos
-    success, img = cap.read() #captura frame da webcam
-    img = detector.findHands(img) #chama classe handdetector
-    lmList, bbox = detector.findPosition(img) #parametro da img
+    # 1. Encontrar pontos de referência para as mãos
+    success, frame = camera.read()  # captura frame da webcam
+    frame = hand_detector.find_hands(frame)  # chama classe HandDetector
+    landmarks_list, bounding_box = hand_detector.find_position(frame)  # parametro da img
 
-    #2.Pegar a ponta dos dedos indicador(1) e médio(2)
-    x1 = y1 = x2 = y2 = 0 #variáveis
-    if len(lmList) != 0:
-        x1, y1 = lmList[8][1:] #ponto 8
-        x2, y2 = lmList[12][1:] #ponto 12
-        #print(x1, y1, x2, y2)
+    # 2. Pegar a ponta dos dedos indicador(1) e médio(2)
+    index_x = index_y = middle_x = middle_y = 0  # variáveis
+    if len(landmarks_list) != 0:
+        index_x, index_y = landmarks_list[8][1:]  # ponto 8
+        middle_x, middle_y = landmarks_list[12][1:]  # ponto 12
 
-    #3.Verificar quais dedos estão levantados
-    fingers = detector.fingersUp()
-    #print(fingers)
-    cv2.rectangle(img, (frameR, frameR), (wCam - frameR, hCam - frameR),
-                  (255, 0, 255), 2) #limitação do mouse na webcam
+    # 3. Verificar quais dedos estão levantados
+    fingers = hand_detector.fingers_up()
+    cv2.rectangle(frame, (FRAME_REDUCTION, FRAME_REDUCTION), (CAM_WIDTH - FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION),
+                  (255, 0, 255), 2)  # limitação do mouse na webcam
 
-    #metodo de confiaça
-    if hasattr(detector, 'detection_confidence') and detector.detection_confidence > 0: #garante confiança maior que 0
-        conf_text = f"Confianca: {detector.detection_confidence:.1f}%" #mostra na tela e arredonda para uma casa decimal
-        cv2.putText(img, conf_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, #define posição xy, fonte, tamano da fonte, cor(verde), espessura
+    # Método de confiança
+    if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
+        conf_text = f"Confianca: {hand_detector.detection_confidence:.1f}%"
+        cv2.putText(frame, conf_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX,
                     0.7, (0, 255, 0), 2)
 
-    #4.Apenas dedo indicador: modo de movimento
+    # 4. Apenas dedo indicador: modo de movimento
     if fingers[1] == 1 and fingers[2] == 0:
-        #4.1.Converter coordenadas da webcam para o monitor
-        x3 = np.interp(x1, (frameR, wCam - frameR), (0, wScr))
-        y3 = np.interp(y1, (frameR, hCam - frameR), (0, hScr))
-        #4.2.Suavizar valores
-        clocX = plocX + (x3 - plocX) / smoothening #em x
-        clocY = plocY + (y3 - plocY) / smoothening #em y
-        #4.3.Mover o mouse
-        autopy.mouse.move(wScr - clocX, clocY) #inverte eixo X para movimento espelhado
-        cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED) #marcar mouse em roxo
-        plocX, plocY = clocX, clocY #próximo frame
+        # Converter coordenadas da webcam para o monitor
+        mapped_x = np.interp(index_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
+        mapped_y = np.interp(index_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
+        # Suavizar valores
+        curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
+        curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
+        # Mover o mouse (inverte eixo X para movimento espelhado)
+        autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
+        cv2.circle(frame, (index_x, index_y), 15, (255, 0, 255), cv2.FILLED)  # marcar mouse em roxo
+        prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
 
-    #5.Se dedo indicador e médio estiverem levantados: Modo de clique
+    # 5. Se dedo indicador e médio estiverem levantados: Modo de clique
     if fingers[1] == 1 and fingers[2] == 1:
-        #5.1.Encontrar a distância entre os dedos
-        length, img, lineInfo = detector.findDistance(8, 12, img)
-        print(length)
-        #5.2.Clicar com o mouse se a distância for curta
-        if length < 40:
-            cv2.circle(img, (lineInfo[4], lineInfo[5]),
-                       15, (0, 255, 0), cv2.FILLED) #confirmar click com circulo verde
+        # Encontrar a distância entre os dedos
+        distance, frame, line_info = hand_detector.find_distance(8, 12, frame)
+        print(distance)
+        # Clicar com o mouse se a distância for curta
+        if distance < 40:
+            cv2.circle(frame, (line_info[4], line_info[5]),
+                       15, (0, 255, 0), cv2.FILLED)  # confirmar click com circulo verde
             autopy.mouse.click()
-    #6.FPS
-    cTime = time.time() #tempo atual
-    fps = 1 / (cTime - pTime) #calcula FPS
-    pTime = cTime
-    cv2.putText(img, str(int(fps)), (20, 50), cv2.FONT_HERSHEY_PLAIN, 3,
-                (255, 0, 0), 3) #fps em azul
 
-    #7.Display
-    cv2.imshow('Image', img) #cria janela
+    # 6. FPS
+    curr_time = time.time()
+    fps = 1 / (curr_time - prev_time)  # calcula FPS
+    prev_time = curr_time
+    cv2.putText(frame, str(int(fps)), (20, 50), cv2.FONT_HERSHEY_PLAIN, 3,
+                (255, 0, 0), 3)
+
+    # Display
+    cv2.imshow('Image', frame)  # cria janela
     # Pressione 'esc' para sair do loop
-    if cv2.waitKey(1) & 0xFF == 27: # 27 é o código ASCII da tecla ESC
+    if cv2.waitKey(1) & 0xFF == 27:
         break
 
 # Libera recursos após sair do loop
-cap.release()
-
+camera.release()
 cv2.destroyAllWindows()
-
