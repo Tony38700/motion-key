@@ -123,9 +123,6 @@ def checar_apenas_letras(entrada):
 def checar_apenas_numeros(entrada):
     return entrada.isdigit()
 
-
-
-
 def main():
     while True:
         # Verificar se já existe algum usuário
@@ -196,6 +193,7 @@ def main():
             elif escolha_principal == '4':
                 login = input("Digite o login do usuário que deseja deletar: ")
                 deletar_usuario(login)
+
 if __name__ == "__main__":
     try:
         main()

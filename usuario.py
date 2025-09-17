@@ -3,6 +3,7 @@ from argon2 import PasswordHasher
 from credenciais_db import DB_PARAMS
 conn = psycopg2.connect(**DB_PARAMS)
 cursor = conn.cursor()
+
 class Usuario:
     def __init__(self, id_pessoa=None,
                 status=None, senha=None, login=None):
@@ -27,8 +28,6 @@ class Usuario:
         conn.close()
 
     def pesquisar_no_banco(self, termo, coluna, DB_PARAMS):
-        
-        
         cursor.execute(f'''
             SELECT * FROM usuario WHERE usuario.{coluna} = %s
         ''', (termo,))
