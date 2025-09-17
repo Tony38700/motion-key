@@ -28,54 +28,74 @@ if not camera.isOpened():
     print("Não foi possível abrir a câmera.")
     exit()
 
+drag_ativo = False
+
 while True:
     # 1. Encontrar pontos de referência para as mãos
     success, frame = camera.read()  # captura frame da webcam
     frame = hand_detector.find_hands(frame)  # chama classe HandDetector
     landmarks_list, bounding_box = hand_detector.find_position(frame)  # parametro da img
 
-    # 2. Pegar a ponta dos dedos indicador(1) e médio(2)
-    index_x = index_y = middle_x = middle_y = 0  # variáveis
-    if len(landmarks_list) != 0:
+    if landmarks_list:
+        # 2. Pegar a ponta dos dedos indicador(1) e médio(2)
+        # index_x = index_y = middle_x = middle_y = 0  # variáveis
         index_x, index_y = landmarks_list[8][1:]  # ponto 8
         middle_x, middle_y = landmarks_list[12][1:]  # ponto 12
 
-    # 3. Verificar quais dedos estão levantados
-    fingers = hand_detector.fingers_up()
-    cv2.rectangle(frame, (FRAME_REDUCTION, FRAME_REDUCTION), (CAM_WIDTH - FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION),
-                  (255, 0, 255), 2)  # limitação do mouse na webcam
+        cv2.rectangle(frame, (FRAME_REDUCTION, FRAME_REDUCTION), (CAM_WIDTH - FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION),
+                    (255, 0, 255), 2)  # limitação do mouse na webcam
 
-    # Método de confiança
-    if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
-        conf_text = f"Confianca: {hand_detector.detection_confidence:.1f}%"
-        cv2.putText(frame, conf_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7, (0, 255, 0), 2)
+        # Método de confiança
+        if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
+            conf_text = f"Confianca: {hand_detector.detection_confidence:.1f}%"
+            cv2.putText(frame, conf_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.7, (0, 255, 0), 2)
 
-    # 4. Apenas dedo indicador: modo de movimento
-    if fingers[1] == 1 and fingers[2] == 0:
-        # Converter coordenadas da webcam para o monitor
-        mapped_x = np.interp(index_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
-        mapped_y = np.interp(index_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
-        # Suavizar valores
-        curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
-        curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
-        # Mover o mouse (inverte eixo X para movimento espelhado)
-        autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
-        cv2.circle(frame, (index_x, index_y), 15, (255, 0, 255), cv2.FILLED)  # marcar mouse em roxo
-        prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
+        # 4. Apenas dedo indicador: modo de movimento
+        if hand_detector.get_distance(landmarks_list[4], landmarks_list[8]) < 20:
+            # Converter coordenadas da webcam para o monitor
+            mapped_x = np.interp(index_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
+            mapped_y = np.interp(index_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
+            # Suavizar valores
+            curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
+            curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
+            # Mover o mouse (inverte eixo X para movimento espelhado)
+            autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
+            cv2.circle(frame, (index_x, index_y), 15, (255, 0, 255), cv2.FILLED)  # marcar mouse em roxo
+            prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
 
-    # 5. Se dedo indicador e médio estiverem levantados: Modo de clique
-    if fingers[1] == 1 and fingers[2] == 1:
-        # Encontrar a distância entre os dedos
-        distance, frame, line_info = hand_detector.find_distance(8, 12, frame)
-        print(distance)
-        # Clicar com o mouse se a distância for curta
-        if distance < 40:
+            if not drag_ativo:
+                autopy.mouse.toggle(autopy.mouse.Button.LEFT, True)  # Segura o botão esquerdo do mouse
+                drag_ativo = True
+
+        else:
+            if drag_ativo:
+                autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)  # Solta o botão esquerdo do mouse
+                drag_ativo = False
+
+        # 5. Se dedo indicador e médio estiverem levantados: Modo de clique
+        if hand_detector.get_distance(landmarks_list[8], landmarks_list[5]) >= 40 and hand_detector.get_distance(landmarks_list[12], landmarks_list[9]) >= 40 and hand_detector.get_distance(landmarks_list[8], landmarks_list[12]) < 20:
+            # Encontrar a distância entre os dedos
+            frame, line_info = hand_detector.draw_distance(landmarks_list[8], landmarks_list[12], frame)
+            print(hand_detector.get_distance(landmarks_list[8], landmarks_list[12]))
             cv2.circle(frame, (line_info[4], line_info[5]),
-                       15, (0, 255, 0), cv2.FILLED)  # confirmar click com circulo verde
+                    15, (0, 255, 0), cv2.FILLED)  # confirmar click com circulo verde
             autopy.mouse.click()
 
-    # 6. FPS
+        # 6. Apenas dedo indicador: modo de movimento
+        elif hand_detector.get_distance(landmarks_list[8], landmarks_list[5]) >= 40:
+            # Converter coordenadas da webcam para o monitor
+            mapped_x = np.interp(index_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
+            mapped_y = np.interp(index_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
+            # Suavizar valores
+            curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
+            curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
+            # Mover o mouse (inverte eixo X para movimento espelhado)
+            autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
+            cv2.circle(frame, (index_x, index_y), 15, (255, 0, 255), cv2.FILLED)  # marcar mouse em roxo
+            prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
+
+    # 7. FPS
     curr_time = time.time()
     fps = 1 / (curr_time - prev_time)  # calcula FPS
     prev_time = curr_time
