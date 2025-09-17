@@ -21,7 +21,6 @@ class HandDetector:
     def find_hands(self, image, draw=True):
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(image_rgb)
-        self.detection_confidence = 0.0
 
         # desenha landmarks nas mãos
         if self.results.multi_hand_landmarks:
@@ -65,39 +64,25 @@ class HandDetector:
 
         return self.landmark_list, bounding_box
 
-    def fingers_up(self):
-        fingers_status = []
-        if not hasattr(self, 'landmark_list') or len(self.landmark_list) == 0:
-            # retorna todos os dedos abaixados se não detectar mão
-            return [0, 0, 0, 0, 0]
+    def get_distance(self, point1, point2):
+        coord_x_1 = int(point1[1])
+        coord_y_1 = int(point1[2])
+        coord_x_2 = int(point2[1])
+        coord_y_2 = int(point2[2])
+        return math.hypot(coord_x_2 - coord_x_1, coord_y_2 - coord_y_1)
 
-        # Polegar
-        if self.landmark_list[self.FINGER_TIP_IDS[0]][1] < self.landmark_list[self.FINGER_TIP_IDS[0] - 1][1]:
-            fingers_status.append(1)  # polegar aberto
-        else:
-            fingers_status.append(0)  # polegar fechado
-
-        # Outros dedos
-        for finger_index in range(1, 5):
-            if self.landmark_list[self.FINGER_TIP_IDS[finger_index]][2] < self.landmark_list[self.FINGER_TIP_IDS[finger_index] - 2][2]:
-                fingers_status.append(1)  # dedo levantado
-            else:
-                fingers_status.append(0)  # dedo abaixado
-
-        # lista de dedos levantados ou não
-        return fingers_status
-
-    def find_distance(self, point1_index, point2_index, image, draw=True, radius=15, thickness=3):
-        point1_x, point1_y = self.landmark_list[point1_index][1:]  # coordenadas do ponto 1
-        point2_x, point2_y = self.landmark_list[point2_index][1:]  # coordenadas do ponto 2
-        center_x, center_y = (point1_x + point2_x) // 2, (point1_y + point2_y) // 2  # centro entre os pontos
+    def draw_distance(self, point1, point2, image, draw=True, radius=15, thickness=3):
+        coord_x_1 = int(point1[1])
+        coord_y_1 = int(point1[2])
+        coord_x_2 = int(point2[1])
+        coord_y_2 = int(point2[2])
+        center_x, center_y = (coord_x_1 + coord_x_2) // 2, (coord_y_1 + coord_y_2) // 2
 
         # círculos e linha
         if draw:
-            cv2.line(image, (point1_x, point1_y), (point2_x, point2_y), (255, 0, 255), thickness)  # entre pontos
-            cv2.circle(image, (point1_x, point1_y), radius, (255, 0, 255), cv2.FILLED)  # no ponto 1
-            cv2.circle(image, (point2_x, point2_y), radius, (255, 0, 255), cv2.FILLED)  # no ponto 2
+            cv2.line(image, (coord_x_1, coord_y_1), (coord_x_2, coord_y_2), (255, 0, 255), thickness)  # entre pontos
+            cv2.circle(image, (coord_x_1, coord_y_1), radius, (255, 0, 255), cv2.FILLED)  # no ponto 1
+            cv2.circle(image, (coord_x_2, coord_y_2), radius, (255, 0, 255), cv2.FILLED)  # no ponto 2
             cv2.circle(image, (center_x, center_y), radius, (0, 0, 255), cv2.FILLED)  # central
-        distance = math.hypot(point2_x - point1_x, point2_y - point1_y)  # distância média entre os pontos
 
-        return distance, image, [point1_x, point1_y, point2_x, point2_y, center_x, center_y]
+        return image, [coord_x_1, coord_x_2, coord_y_1, coord_y_2, center_x, center_y]
