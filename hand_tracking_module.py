@@ -2,21 +2,23 @@ import cv2
 import mediapipe as mp
 import math
 
+
 class HandDetector:
-    def __init__(self, MODE=False, MAX_HANDS=2, DETECTION_CONFIDENCE=0.5, TRACKING_CONFIDENCE=0.5):
-        self.MODE = MODE
-        self.MAX_HANDS = MAX_HANDS
-        self.DETECTION_CONFIDENCE = DETECTION_CONFIDENCE
-        self.TRACKING_CONFIDENCE = TRACKING_CONFIDENCE
+    def __init__(self, mode=False, max_hands=2, detection_confidence=0.5,
+                 tracking_confidence=0.5):
+        self.mode = mode
+        self.max_hands = max_hands
+        self.detection_confidence = detection_confidence
+        self.tracking_confidence = tracking_confidence
 
         self.hands = mp.solutions.hands.Hands(
-            static_image_mode=self.MODE,
-            max_num_hands=self.MAX_HANDS,
-            min_detection_confidence=self.DETECTION_CONFIDENCE,
-            min_tracking_confidence=self.TRACKING_CONFIDENCE
+            static_image_mode=self.mode,
+            max_num_hands=self.max_hands,
+            min_detection_confidence=self.detection_confidence,
+            min_tracking_confidence=self.tracking_confidence
         )
         # IDs dos dedos: polegar, indicador, médio, anelar e mindinho
-        self.FINGER_TIP_IDS = [4, 8, 12, 16, 20]
+        self.finger_tip_ids = [4, 8, 12, 16, 20]
 
     def find_hands(self, image, draw=True):
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -80,9 +82,46 @@ class HandDetector:
 
         # círculos e linha
         if draw:
-            cv2.line(image, (coord_x_1, coord_y_1), (coord_x_2, coord_y_2), (255, 0, 255), thickness)  # entre pontos
+            cv2.line(image, (coord_x_1, coord_y_1), (coord_x_2, coord_y_2),
+                     (255, 0, 255), thickness)  # entre pontos
             cv2.circle(image, (coord_x_1, coord_y_1), radius, (255, 0, 255), cv2.FILLED)  # no ponto 1
             cv2.circle(image, (coord_x_2, coord_y_2), radius, (255, 0, 255), cv2.FILLED)  # no ponto 2
             cv2.circle(image, (center_x, center_y), radius, (0, 0, 255), cv2.FILLED)  # central
 
         return image, [coord_x_1, coord_x_2, coord_y_1, coord_y_2, center_x, center_y]
+
+
+# Funções auxiliares para gestos
+def verificar_dedos_levantados(landmarks_list):
+    """Verifica quais dedos estão levantados com base nos landmarks."""
+    dedos = [0, 0, 0, 0, 0]  # [polegar, indicador, medio, anelar, minimo]
+
+    # Pontas dos dedos e suas juntas de referência
+    pontos_referencia = [
+        (4, 3, 2, 'x'),  # Polegar (usa coordenada x)
+        (8, 6, 7, 'y'),  # Indicador
+        (12, 10, 11, 'y'),  # Médio
+        (16, 14, 15, 'y'),  # Anelar
+        (20, 18, 19, 'y')  # Mínimo
+    ]
+
+    for i, (ponta, junta1, junta2, eixo) in enumerate(pontos_referencia):
+        if i == 0:  # Polegar (lógica especial)
+            if landmarks_list[ponta][1] > landmarks_list[junta1][1]:
+                dedos[0] = 1
+        else:  # Outros dedos
+            if landmarks_list[ponta][2] < landmarks_list[junta1][2]:
+                dedos[i] = 1
+
+    return dedos
+
+
+def verificar_gesto_saida(dedos):
+    """Verifica gesto de saída: polegar levantado + outros dedos abaixados."""
+    return (dedos[0] == 1 and  # Polegar levantado
+            all(d == 0 for d in dedos[1:]))  # Todos os outros dedos abaixados
+
+
+def verificar_clique_duplo(dedos):
+    """Verifica gesto de clique duplo: todos dedos abaixados."""
+    return all(d == 0 for d in dedos)
