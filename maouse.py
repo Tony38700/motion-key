@@ -172,6 +172,7 @@ def main():
                 if tempo_atual - ultimo_clique > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.RIGHT)
+                        time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE DIREITO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
                         ultimo_clique = tempo_atual
@@ -188,6 +189,7 @@ def main():
                 if tempo_atual - ultimo_clique > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.LEFT)
+                        time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE ESQUERDO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                         ultimo_clique = tempo_atual
@@ -210,11 +212,11 @@ def main():
             cv2.putText(frame, status_arrasto, (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
                         (0, 0, 255) if drag_ativo else (0, 255, 0), 2)
 
-        # 9. Informações gerais
+        # 9. FPS
         curr_time = time.time()
         fps = 1 / (curr_time - prev_time)
         prev_time = curr_time
-        cv2.putText(frame, f"FPS: {int(fps)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+        cv2.putText(frame, f"FPS: {int(fps)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
         # 10. Instruções de saída
         cv2.putText(frame, "ESC ou Mao Fechada (3s) para SAIR",
