@@ -121,7 +121,16 @@ def verificar_gesto_saida(dedos):
     return (dedos[0] == 1 and  # Polegar levantado
             all(d == 0 for d in dedos[1:]))  # Todos os outros dedos abaixados
 
-
 def verificar_clique_duplo(dedos):
     """Verifica gesto de clique duplo: todos dedos abaixados."""
     return all(d == 0 for d in dedos)
+
+def verificar_scroll_up(dedos):
+    """Verifica gesto de scroll up: Polegar + Indicador levantados, outros abaixados."""
+    return (dedos[0] == 1 and dedos[1] == 1 and  # Polegar + Indicador levantados
+            all(d == 0 for d in dedos[2:]))      # Médio, Anelar, Mínimo abaixados
+
+def verificar_scroll_down(dedos):
+    """Verifica gesto de scroll down: Polegar + Mindinho levantados, outros abaixados."""
+    return (dedos[0] == 1 and dedos[4] == 1 and  # Polegar + Mindinho levantados
+            all(d == 0 for d in dedos[1:4]))     # Indicador, Médio, Anelar abaixados
