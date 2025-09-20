@@ -2,8 +2,10 @@ import cv2
 import numpy as np
 import time
 import autopy
+import pyautogui # Para scroll
 from hand_tracking_module import HandDetector, verificar_dedos_levantados, \
-    verificar_gesto_saida, verificar_clique_duplo
+    verificar_gesto_saida, verificar_clique_duplo, verificar_scroll_up, \
+    verificar_scroll_down
 
 """""""""
 Movimento: Polegar + Indicador + Médio levantados ✌️
@@ -11,6 +13,8 @@ Arrasto: Polegar abaixado + Indicador tocando no polegar + outros 3 levantados �
 Clique Esquerdo: Médio levantado + outros abaixados 🖱️🖕
 Clique Direito: Indicador levantado + outros abaixados 👆🖱️
 Clique Duplo: Todos os dedos abaixados 🖱️👍(-90º)🖱️
+Scroll Up: Polegar + Indicador levantados 👆
+Scroll Down: Polegar + Mindinho levantados 🤟
 Sair: Polegar levantado + outros abaixados (3 segundos) ✊ 
 """""""""
 
@@ -19,10 +23,9 @@ CAM_WIDTH, CAM_HEIGHT = 640, 480
 FRAME_REDUCTION = 100
 SMOOTHENING = 7  # Suavização do mouse
 SMOOTHENING_DRAG = 7  # Suavização do arrasto
-DRAG_DISTANCE_THRESHOLD = 40  # Distância máxima para ativar arrasto
+DRAG_DISTANCE_THRESHOLD = 20  # Distância máxima para ativar arrasto
 EXIT_GESTURE_TIME = 3.0  # 3 segundos com gesto de saída
 DOUBLE_CLICK_COOLDOWN = 2.0  # 2 segundo entre cliques duplos
-
 
 def main():
     # 1. inicialização
@@ -46,7 +49,9 @@ def main():
     drag_ativo = False
     ultimo_clique = 0
     ultimo_duplo_clique = 0
+    ultimo_scroll = 0
     clique_cooldown = 1.0
+    scroll_cooldown = 0.5
     exit_gesture_start_time = 0
     exit_gesture_active = False
 
@@ -139,7 +144,32 @@ def main():
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                         print("Arrasto desativado")
 
-            # 6.3. Movimento do Mouse
+            # 6.3. Scroll Up
+            elif verificar_scroll_up(dedos) and not drag_ativo:
+                tempo_atual = time.time()
+                if tempo_atual - ultimo_scroll > scroll_cooldown:
+                    try:
+                        pyautogui.scroll(200)
+                        cv2.putText(frame, "SCROLL UP", (10, 210),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                        ultimo_scroll = tempo_atual
+                    except Exception as e:
+                        print(f"Erro no scroll up: {e}")
+
+            # 6.4. Scroll Down
+            elif verificar_scroll_down(dedos) and not drag_ativo:
+                tempo_atual = time.time()
+                if tempo_atual - ultimo_scroll > scroll_cooldown:
+                    try:
+                        pyautogui.scroll(-200)
+                        cv2.putText(frame, "SCROLL DOWN", (10, 210),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
+                        ultimo_scroll = tempo_atual
+                        time.sleep(0.1)
+                    except Exception as e:
+                        print(f"Erro no scroll down: {e}")
+
+            # 6.5. Movimento do Mouse
             elif (dedos[1] == 1 and dedos[2] == 1 and
                   all(d == 0 for d in [dedos[3], dedos[4]]) and not drag_ativo):
 
@@ -164,7 +194,7 @@ def main():
                 cv2.putText(frame, status_mouse, (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
                             (0, 255, 0) if not mouse_travado else (0, 0, 255), 2)
 
-            # 6.4. Clique Direito
+            # 6.6. Clique Direito
             elif (dedos[0] == 0 and dedos[1] == 1 and
                   all(d == 0 for d in dedos[2:]) and not drag_ativo):
 
@@ -181,7 +211,7 @@ def main():
                     except Exception as e:
                         print(f"Erro no clique direito: {e}")
 
-            # 6.5. Clique Esquerdo
+            # 6.7. Clique Esquerdo
             elif (dedos[0] == 0 and dedos[2] == 1 and
                   dedos[1] == 0 and all(d == 0 for d in [dedos[3], dedos[4]]) and not drag_ativo):
 
