@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de Usuários</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .btn.danger:hover {
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .menu-buttons {
+            display: grid;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .success-message, .error-message {
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #f8f9fa;
+            margin: 1rem 0;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-login {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+    
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .modal-btn.secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #e1e5e9;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #e9ecef;
+        }
+
+
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="firstUserModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-icon">⚙️</div>
+            <h2>Sistema não configurado</h2>
+            <p>Nenhum usuário foi encontrado no sistema. Para começar a usar, é necessário cadastrar o primeiro usuário que terá acesso administrativo.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeFirstUserModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="proceedToFirstUser()">Configurar Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Tela de Login -->
+        <div id="loginScreen">
+            <div class="header">
+                <h1>👌MotionKey</h1>
+                <p>Acesse sua conta</p>
+            </div>
+            
+
+            
+            <div id="messageArea"></div>
+            
+            <div class="form-group">
+                <label for="loginInput">Login:</label>
+                <input type="text" id="loginInput" placeholder="Digite seu login">
+            </div>
+            
+            <div class="form-group">
+                <label for="passwordInput">Senha:</label>
+                <input type="password" id="passwordInput" placeholder="Digite sua senha">
+            </div>
+            
+            <button class="btn" onclick="login()">Entrar</button>
+            <div id="createAccountSection" class="hidden" style="margin-top: 1rem; text-align: center;">
+                <p style="color: #666; margin-bottom: 0.5rem;">Não tem conta?</p>
+                <button class="btn secondary" onclick="showSelfRegistration()">Criar Conta</button>
+            </div>
+        </div>
+
+        <!-- Formulário do Primeiro Usuário -->
+        <div id="firstUserScreen" class="hidden">
+            <div class="header">
+                <h1>⚙️ Primeiro Usuário</h1>
+                <p>Configure o sistema cadastrando o primeiro usuário</p>
+            </div>
+            
+            <div id="firstUserMessageArea"></div>
+            
+            <div class="form-group">
+                <label for="firstUserName">Nome Completo:</label>
+                <input type="text" id="firstUserName" placeholder="Digite o nome completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserBirth">Data de Nascimento:</label>
+                <input type="date" id="firstUserBirth">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserCPF">CPF (somente números):</label>
+                <input type="text" id="firstUserCPF" placeholder="12345678901">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserPhone">Telefone (somente números):</label>
+                <input type="text" id="firstUserPhone" placeholder="11987654321">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserAddress">Endereço:</label>
+                <input type="text" id="firstUserAddress" placeholder="Rua, número, bairro">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserEmail">Email (opcional):</label>
+                <input type="email" id="firstUserEmail" placeholder="email@exemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserLogin">Login:</label>
+                <input type="text" id="firstUserLogin" placeholder="Digite o login">
+            </div>
+            
+            <div class="form-group">
+                <label for="firstUserPassword">Senha:</label>
+                <input type="password" id="firstUserPassword" placeholder="Digite a senha">
+            </div>
+            
+            <button class="btn" onclick="createFirstUser()">Cadastrar Primeiro Usuário</button>
+            <button class="btn secondary" onclick="showLoginScreen()">Voltar ao Login</button>
+        </div>
+
+        <!-- Menu Principal -->
+        <div id="mainMenu" class="hidden">
+            <div class="header">
+                <h1>🏠 Menu Principal</h1>
+                <p>Bem-vindo ao sistema!</p>
+            </div>
+            
+            <div id="mainMenuMessageArea"></div>
+            
+            <div class="menu-buttons">
+                <button class="btn" onclick="showNewUserForm()">1 - Cadastrar Usuário</button>
+                <button class="btn" onclick="showGestureMenu()">2 - Adicionar Gesto</button>
+                <button class="btn" onclick="showRelationMenu()">3 - Reorganizar Relação</button>
+                <button class="btn" id="deleteUserBtn" onclick="showDeleteUserMenu()">4 - Deletar Usuário</button>
+                <button class="btn" id="runMotionKeyBtn" onclick="runMotionKey()"><span style="font-size:1.3em;vertical-align:middle;">⚙️</span> Executar MotionKey (Controle por Gestos)</button>
+                <button class="btn secondary" onclick="logout()">5 - Sair</button>
+            </div>
+        </div>
+
+        <!-- Cadastro de Novo Usuário -->
+        <div id="newUserScreen" class="hidden">
+            <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
+            
+            <div class="header">
+                <h1>👤 Novo Usuário</h1>
+                <p>Cadastre um novo usuário no sistema</p>
+            </div>
+            
+            <div id="newUserMessageArea"></div>
+            
+            <div class="form-group">
+                <label for="newUserName">Nome Completo:</label>
+                <input type="text" id="newUserName" placeholder="Digite o nome completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserBirth">Data de Nascimento:</label>
+                <input type="date" id="newUserBirth">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserCPF">CPF (somente números):</label>
+                <input type="text" id="newUserCPF" placeholder="12345678901">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserPhone">Telefone (somente números):</label>
+                <input type="text" id="newUserPhone" placeholder="11987654321">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserAddress">Endereço:</label>
+                <input type="text" id="newUserAddress" placeholder="Rua, número, bairro">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserEmail">Email (opcional):</label>
+                <input type="email" id="newUserEmail" placeholder="email@exemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserLogin">Login:</label>
+                <input type="text" id="newUserLogin" placeholder="Digite o login">
+            </div>
+            
+            <div class="form-group">
+                <label for="newUserPassword">Senha:</label>
+                <input type="password" id="newUserPassword" placeholder="Digite a senha">
+            </div>
+            
+            <button class="btn" onclick="createNewUser()">Cadastrar Usuário</button>
+        </div>
+
+        
+        <div id="selfRegistrationScreen" class="hidden">
+            <button class="back-btn" onclick="showLoginScreen()">← Voltar ao Login</button>
+            
+            <div class="header">
+                <h1>📝 Criar Conta</h1>
+                <p>Cadastre-se para usar o sistema</p>
+            </div>
+            
+            <div id="selfRegMessageArea"></div>
+            
+            <div class="form-group">
+                <label for="selfRegName">Nome Completo:</label>
+                <input type="text" id="selfRegName" placeholder="Digite o nome completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegBirth">Data de Nascimento:</label>
+                <input type="date" id="selfRegBirth">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegCPF">CPF (somente números):</label>
+                <input type="text" id="selfRegCPF" placeholder="12345678901">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegPhone">Telefone (somente números):</label>
+                <input type="text" id="selfRegPhone" placeholder="11987654321">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegAddress">Endereço:</label>
+                <input type="text" id="selfRegAddress" placeholder="Rua, número, bairro">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegEmail">Email (opcional):</label>
+                <input type="email" id="selfRegEmail" placeholder="email@exemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegLogin">Login:</label>
+                <input type="text" id="selfRegLogin" placeholder="Digite o login">
+            </div>
+            
+            <div class="form-group">
+                <label for="selfRegPassword">Senha:</label>
+                <input type="password" id="selfRegPassword" placeholder="Digite a senha">
+            </div>
+            
+            <button class="btn" onclick="createSelfRegistration()">Criar Conta</button>
+        </div>
+
+        <!-- Deletar Usuário -->
+        <div id="deleteUserScreen" class="hidden">
+            <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
+            
+            <div class="header">
+                <h1>🗑️ Deletar Usuário</h1>
+                <p>Selecione um usuário para remover do sistema</p>
+            </div>
+            
+            <div id="deleteUserMessageArea"></div>
+            
+            <div id="usersList" class="user-list">
+            </div>
+        </div>
+
+        <!-- Coisas que ainda faltam implementar -->
+        <div id="developmentScreen" class="hidden">
+            <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
+            
+            <div class="header">
+                <h1>🚧 Em Desenvolvimento</h1>
+                <p id="developmentMessage">Esta funcionalidade está sendo desenvolvida</p>
+            </div>
+            
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">⚙️</div>
+                <p style="color: #666;">Funcionalidade em construção...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função que simula estar rodando o programa MotionKey, pois ainda falta uma API
+        function runMotionKey() {
+            showMotionKeyOverlay();
+            setTimeout(() => {
+                document.getElementById('motionKeyOverlay').classList.remove('show');
+                showMessage('mainMenuMessageArea', 'MotionKey finalizado.');
+            }, 5000);
+        }
+
+        // Tela que diz que o MotionKey está rodando
+        function showMotionKeyOverlay() {
+            let overlay = document.getElementById('motionKeyOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'motionKeyOverlay';
+                overlay.className = 'modal-overlay show';
+                overlay.innerHTML = `
+                    <div class="modal">
+                        <div class="modal-icon" style="font-size:3em;">⚙️</div>
+                        <h2>MotionKey está sendo executado...</h2>
+                        <p>O controle por gestos está ativo.<br>Feche a janela do MotionKey para retornar.</p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            } else {
+                overlay.classList.add('show');
+            }
+        }
+        // Simulação do banco de dados em memória
+        let users = [];
+        let currentUser = null;
+
+        // Função para mostrar mensagens
+        function showMessage(containerId, message, isError = false) {
+            const container = document.getElementById(containerId);
+            const messageClass = isError ? 'error-message' : 'success-message';
+            container.innerHTML = `<div class="${messageClass}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Funções de Validação
+        function isValidCPF(cpf) {
+            return /^\d{11}$/.test(cpf);
+        }
+
+        function isValidPhone(phone) {
+            return /^\d{10,11}$/.test(phone);
+        }
+
+        function isValidName(name) {
+            return /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
+        }
+
+        // Função para mostrar/ocultar opção de criar conta
+        function updateCreateAccountOption() {
+            const createAccountSection = document.getElementById('createAccountSection');
+            // Mostra opção de criar conta se já existe pelo menos um usuário (admin)
+            if (users.length > 0) {
+                createAccountSection.classList.remove('hidden');
+            } else {
+                createAccountSection.classList.add('hidden');
+            }
+        }
+
+        // Navegação entre telas
+        function showScreen(screenId) {
+            const screens = ['loginScreen', 'firstUserScreen', 'mainMenu', 'newUserScreen', 'selfRegistrationScreen', 'deleteUserScreen', 'developmentScreen'];
+            screens.forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            // Atualiza opção de criar conta na tela de login
+            if (screenId === 'loginScreen') {
+                updateCreateAccountOption();
+            }
+        }
+
+        function showLoginScreen() {
+            showScreen('loginScreen');
+        }
+
+        function showFirstUserForm() {
+            showScreen('firstUserScreen');
+        }
+
+        function showMainMenu() {
+            showScreen('mainMenu');
+            
+            // Faz com que somente o admin veja o botão de deletar usuário
+            const deleteBtn = document.getElementById('deleteUserBtn');
+            if (currentUser && currentUser.isAdmin) {
+                deleteBtn.style.display = 'block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        }
+
+        function showNewUserForm() {
+            showScreen('newUserScreen');
+        }
+
+        function showSelfRegistration() {
+            showScreen('selfRegistrationScreen');
+        }
+
+        function showDeleteUserMenu() {
+            // Verifica se o usuário atual é admin
+            if (!currentUser || !currentUser.isAdmin) {
+                showMessage('mainMenuMessageArea', 'Acesso negado. Apenas administradores podem deletar usuários.', true);
+                return;
+            }
+            showScreen('deleteUserScreen');
+            loadUsersList();
+        }
+
+        function showGestureMenu() {
+            document.getElementById('developmentMessage').textContent = 'Adicionar Gesto - Em desenvolvimento';
+            showScreen('developmentScreen');
+        }
+
+        function showRelationMenu() {
+            document.getElementById('developmentMessage').textContent = 'Reorganizar relação gesto/comando - Em desenvolvimento';
+            showScreen('developmentScreen');
+        }
+
+        
+        function showFirstUserModal() {
+            if (users.length === 0) {
+                document.getElementById('firstUserModal').classList.add('show');
+            }
+        }
+
+        function closeFirstUserModal() {
+            document.getElementById('firstUserModal').classList.remove('show');
+        }
+
+        function proceedToFirstUser() {
+            closeFirstUserModal();
+            showFirstUserForm();
+        }
+
+        // Função de login
+        function login() {
+            const login = document.getElementById('loginInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            if (!login || !password) {
+                showMessage('messageArea', 'Por favor, preencha todos os campos.', true);
+                return;
+            }
+
+            if (users.length === 0) {
+                showMessage('messageArea', 'Nenhum usuário cadastrado. Configure o sistema primeiro.', true);
+                setTimeout(showFirstUserModal, 1500);
+                return;
+            }
+
+            const user = users.find(u => u.login === login && u.password === password);
+            if (user) {
+                currentUser = user;
+                showMessage('messageArea', '✅ Login realizado com sucesso!');
+                setTimeout(() => showMainMenu(), 1500);
+            } else {
+                showMessage('messageArea', 'Login ou senha incorretos.', true);
+            }
+        }
+
+        // Criar primeiro usuário
+        function createFirstUser() {
+            const name = document.getElementById('firstUserName').value;
+            const birth = document.getElementById('firstUserBirth').value;
+            const cpf = document.getElementById('firstUserCPF').value;
+            const phone = document.getElementById('firstUserPhone').value;
+            const address = document.getElementById('firstUserAddress').value;
+            const email = document.getElementById('firstUserEmail').value;
+            const login = document.getElementById('firstUserLogin').value;
+            const password = document.getElementById('firstUserPassword').value;
+
+            // Validações
+            if (!name || !birth || !cpf || !phone || !address || !login || !password) {
+                showMessage('firstUserMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
+                return;
+            }
+
+            if (!isValidName(name)) {
+                showMessage('firstUserMessageArea', 'Nome deve conter apenas letras e espaços.', true);
+                return;
+            }
+
+            if (!isValidCPF(cpf)) {
+                showMessage('firstUserMessageArea', 'CPF deve conter exatamente 11 números.', true);
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showMessage('firstUserMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
+                return;
+            }
+
+            if (users.some(u => u.login === login)) {
+                showMessage('firstUserMessageArea', 'Login já existe.', true);
+                return;
+            }
+
+            if (users.some(u => u.cpf === cpf)) {
+                showMessage('firstUserMessageArea', 'CPF já cadastrado.', true);
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                birth,
+                cpf,
+                phone,
+                address,
+                email,
+                login,
+                password,
+                isAdmin: true  // Primeiro usuário é sempre admin
+            };
+
+            users.push(newUser);
+            showMessage('firstUserMessageArea', '✅ Sistema configurado com sucesso!');
+            
+            // Limpar formulário
+            document.getElementById('firstUserName').value = '';
+            document.getElementById('firstUserBirth').value = '';
+            document.getElementById('firstUserCPF').value = '';
+            document.getElementById('firstUserPhone').value = '';
+            document.getElementById('firstUserAddress').value = '';
+            document.getElementById('firstUserEmail').value = '';
+            document.getElementById('firstUserLogin').value = '';
+            document.getElementById('firstUserPassword').value = '';
+            
+            setTimeout(() => showLoginScreen(), 2000);
+        }
+
+        // Criar novo usuário
+        function createNewUser() {
+            const name = document.getElementById('newUserName').value;
+            const birth = document.getElementById('newUserBirth').value;
+            const cpf = document.getElementById('newUserCPF').value;
+            const phone = document.getElementById('newUserPhone').value;
+            const address = document.getElementById('newUserAddress').value;
+            const email = document.getElementById('newUserEmail').value;
+            const login = document.getElementById('newUserLogin').value;
+            const password = document.getElementById('newUserPassword').value;
+
+            // Validações
+            if (!name || !birth || !cpf || !phone || !address || !login || !password) {
+                showMessage('newUserMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
+                return;
+            }
+
+            if (!isValidName(name)) {
+                showMessage('newUserMessageArea', 'Nome deve conter apenas letras e espaços.', true);
+                return;
+            }
+
+            if (!isValidCPF(cpf)) {
+                showMessage('newUserMessageArea', 'CPF deve conter exatamente 11 números.', true);
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showMessage('newUserMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
+                return;
+            }
+
+            if (users.some(u => u.login === login)) {
+                showMessage('newUserMessageArea', 'Login já existe.', true);
+                return;
+            }
+
+            if (users.some(u => u.cpf === cpf)) {
+                showMessage('newUserMessageArea', 'CPF já cadastrado.', true);
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                birth,
+                cpf,
+                phone,
+                address,
+                email,
+                login,
+                password,
+                isAdmin: false  // Novos usuários não são admin
+            };
+
+            users.push(newUser);
+            showMessage('newUserMessageArea', '✅ Usuário cadastrado com sucesso!');
+            
+            // Limpar formulário
+            document.getElementById('newUserName').value = '';
+            document.getElementById('newUserBirth').value = '';
+            document.getElementById('newUserCPF').value = '';
+            document.getElementById('newUserPhone').value = '';
+            document.getElementById('newUserAddress').value = '';
+            document.getElementById('newUserEmail').value = '';
+            document.getElementById('newUserLogin').value = '';
+            document.getElementById('newUserPassword').value = '';
+            
+            setTimeout(() => showMainMenu(), 2000);
+        }
+
+        // Criar usuário via auto-cadastro (público)
+        function createSelfRegistration() {
+            const name = document.getElementById('selfRegName').value;
+            const birth = document.getElementById('selfRegBirth').value;
+            const cpf = document.getElementById('selfRegCPF').value;
+            const phone = document.getElementById('selfRegPhone').value;
+            const address = document.getElementById('selfRegAddress').value;
+            const email = document.getElementById('selfRegEmail').value;
+            const login = document.getElementById('selfRegLogin').value;
+            const password = document.getElementById('selfRegPassword').value;
+
+            // Validações
+            if (!name || !birth || !cpf || !phone || !address || !login || !password) {
+                showMessage('selfRegMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
+                return;
+            }
+
+            if (!isValidName(name)) {
+                showMessage('selfRegMessageArea', 'Nome deve conter apenas letras e espaços.', true);
+                return;
+            }
+
+            if (!isValidCPF(cpf)) {
+                showMessage('selfRegMessageArea', 'CPF deve conter exatamente 11 números.', true);
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showMessage('selfRegMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
+                return;
+            }
+
+            if (users.some(u => u.login === login)) {
+                showMessage('selfRegMessageArea', 'Login já existe.', true);
+                return;
+            }
+
+            if (users.some(u => u.cpf === cpf)) {
+                showMessage('selfRegMessageArea', 'CPF já cadastrado.', true);
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                birth,
+                cpf,
+                phone,
+                address,
+                email,
+                login,
+                password,
+                isAdmin: false  // Auto-cadastro nunca é admin
+            };
+
+            users.push(newUser);
+            showMessage('selfRegMessageArea', '✅ Conta criada com sucesso!');
+            
+            // Limpar formulário
+            document.getElementById('selfRegName').value = '';
+            document.getElementById('selfRegBirth').value = '';
+            document.getElementById('selfRegCPF').value = '';
+            document.getElementById('selfRegPhone').value = '';
+            document.getElementById('selfRegAddress').value = '';
+            document.getElementById('selfRegEmail').value = '';
+            document.getElementById('selfRegLogin').value = '';
+            document.getElementById('selfRegPassword').value = '';
+            
+            setTimeout(() => {
+                showLoginScreen();
+                showMessage('messageArea', '✅ Conta criada! Faça login para continuar.');
+            }, 2000);
+        }
+
+        // Carregar lista de usuários
+        function loadUsersList() {
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum usuário cadastrado.</p>';
+                return;
+            }
+
+            let html = '';
+            users.forEach(user => {
+                html += `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <div class="user-name">${user.name} ${user.isAdmin ? '👑' : ''}</div>
+                            <div class="user-login">Login: ${user.login}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteUser('${user.login}')" ${user.isAdmin ? 'title="Administrador"' : ''}>Deletar</button>
+                    </div>
+                `;
+            });
+            
+            usersList.innerHTML = html;
+        }
+
+        // Deletar usuário
+        function deleteUser(login) {
+            
+            if (!currentUser || !currentUser.isAdmin) {
+                showMessage('deleteUserMessageArea', 'Acesso negado. Apenas administradores podem deletar usuários.', true);
+                return;
+            }
+            
+            // Impede que o admin delete a si mesmo
+            if (currentUser.login === login) {
+                showMessage('deleteUserMessageArea', 'Você não pode deletar sua própria conta.', true);
+                return;
+            }
+            
+            if (confirm(`Tem certeza que deseja deletar o usuário "${login}"?`)) {
+                const userIndex = users.findIndex(u => u.login === login);
+                if (userIndex !== -1) {
+                    users.splice(userIndex, 1);
+                    showMessage('deleteUserMessageArea', `✅ Usuário "${login}" deletado com sucesso!`);
+                    loadUsersList();
+                }
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            showLoginScreen();
+        }
+
+        // Eventos de teclado para login
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializa a opção de criar conta
+            updateCreateAccountOption();
+            
+            document.getElementById('loginInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('passwordInput').focus();
+                }
+            });
+
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+ 
+            document.getElementById('firstUserModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFirstUserModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
