@@ -1,0 +1,5 @@
+numpy
+autopy
+pyautogui
+mediapipe
+opencv-python
