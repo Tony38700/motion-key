@@ -6,7 +6,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="motionkys.ico">
     <link rel="icon" href="motionkys.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gerenciamento de Usuários</title>
+    <title>👌MotionKey</title>
     <style>
         * {
             margin: 0;
@@ -326,8 +326,6 @@
     </style>
 </head>
 <body>
-    
-    <!-- Modal removido -->
 
     <div class="container">
         <!-- Tela de Login -->
@@ -358,8 +356,6 @@
             </div>
         </div>
 
-        <!-- Formulário do Primeiro Usuário removido -->
-
         <!-- Menu Principal -->
         <div id="mainMenu" class="hidden">
             <div class="header">
@@ -379,7 +375,6 @@
             </div>
         </div>
 
-        <!-- Cadastro de Novo Usuário removido -->
         <!-- Tela de edição de perfil -->
         <div id="editProfileScreen" class="hidden">
             <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
@@ -423,7 +418,7 @@
             <button class="btn" onclick="saveProfileEdit()">Salvar Alterações</button>
         </div>
 
-        
+        <!-- Tela de auto-cadastro -->
     <div id="selfRegistrationScreen" class="hidden">
             <button class="back-btn" onclick="showLoginScreen()">← Voltar ao Login</button>
             
@@ -627,10 +622,6 @@
             showScreen('loginScreen');
         }
 
-        function showFirstUserForm() {
-            showScreen('firstUserScreen');
-        }
-
         function showMainMenu() {
             showScreen('mainMenu');
             
@@ -641,10 +632,6 @@
             } else {
                 deleteBtn.style.display = 'none';
             }
-        }
-
-        function showNewUserForm() {
-            showScreen('newUserScreen');
         }
 
         function showSelfRegistration() {
@@ -671,22 +658,6 @@
             showScreen('developmentScreen');
         }
 
-        
-        function showFirstUserModal() {
-            if (users.length === 0) {
-                document.getElementById('firstUserModal').classList.add('show');
-            }
-        }
-
-        function closeFirstUserModal() {
-            document.getElementById('firstUserModal').classList.remove('show');
-        }
-
-        function proceedToFirstUser() {
-            closeFirstUserModal();
-            showFirstUserForm();
-        }
-
         // Função de login
         function login() {
             const login = document.getElementById('loginInput').value;
@@ -694,12 +665,6 @@
 
             if (!login || !password) {
                 showMessage('messageArea', 'Por favor, preencha todos os campos.', true);
-                return;
-            }
-
-            if (users.length === 0) {
-                showMessage('messageArea', 'Nenhum usuário cadastrado. Configure o sistema primeiro.', true);
-                setTimeout(showFirstUserModal, 1500);
                 return;
             }
 
@@ -711,148 +676,6 @@
             } else {
                 showMessage('messageArea', 'Login ou senha incorretos.', true);
             }
-        }
-
-        // Criar primeiro usuário
-        function createFirstUser() {
-            const name = document.getElementById('firstUserName').value;
-            const birth = document.getElementById('firstUserBirth').value;
-            const cpf = document.getElementById('firstUserCPF').value;
-            const phone = document.getElementById('firstUserPhone').value;
-            const address = document.getElementById('firstUserAddress').value;
-            const email = document.getElementById('firstUserEmail').value;
-            const login = document.getElementById('firstUserLogin').value;
-            const password = document.getElementById('firstUserPassword').value;
-
-            // Validações
-            if (!name || !birth || !cpf || !phone || !address || !login || !password) {
-                showMessage('firstUserMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
-                return;
-            }
-
-            if (!isValidName(name)) {
-                showMessage('firstUserMessageArea', 'Nome deve conter apenas letras e espaços.', true);
-                return;
-            }
-
-            if (!isValidCPF(cpf)) {
-                showMessage('firstUserMessageArea', 'CPF deve conter exatamente 11 números.', true);
-                return;
-            }
-
-            if (!isValidPhone(phone)) {
-                showMessage('firstUserMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
-                return;
-            }
-
-            if (users.some(u => u.login === login)) {
-                showMessage('firstUserMessageArea', 'Login já existe.', true);
-                return;
-            }
-
-            if (users.some(u => u.cpf === cpf)) {
-                showMessage('firstUserMessageArea', 'CPF já cadastrado.', true);
-                return;
-            }
-
-            const newUser = {
-                id: Date.now(),
-                name,
-                birth,
-                cpf,
-                phone,
-                address,
-                email,
-                login,
-                password,
-                isAdmin: true  // Primeiro usuário é sempre admin
-            };
-
-            users.push(newUser);
-            showMessage('firstUserMessageArea', '✅ Sistema configurado com sucesso!');
-            
-            // Limpar formulário
-            document.getElementById('firstUserName').value = '';
-            document.getElementById('firstUserBirth').value = '';
-            document.getElementById('firstUserCPF').value = '';
-            document.getElementById('firstUserPhone').value = '';
-            document.getElementById('firstUserAddress').value = '';
-            document.getElementById('firstUserEmail').value = '';
-            document.getElementById('firstUserLogin').value = '';
-            document.getElementById('firstUserPassword').value = '';
-            
-            setTimeout(() => showLoginScreen(), 2000);
-        }
-
-        // Criar novo usuário
-        function createNewUser() {
-            const name = document.getElementById('newUserName').value;
-            const birth = document.getElementById('newUserBirth').value;
-            const cpf = document.getElementById('newUserCPF').value;
-            const phone = document.getElementById('newUserPhone').value;
-            const address = document.getElementById('newUserAddress').value;
-            const email = document.getElementById('newUserEmail').value;
-            const login = document.getElementById('newUserLogin').value;
-            const password = document.getElementById('newUserPassword').value;
-
-            // Validações
-            if (!name || !birth || !cpf || !phone || !address || !login || !password) {
-                showMessage('newUserMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
-                return;
-            }
-
-            if (!isValidName(name)) {
-                showMessage('newUserMessageArea', 'Nome deve conter apenas letras e espaços.', true);
-                return;
-            }
-
-            if (!isValidCPF(cpf)) {
-                showMessage('newUserMessageArea', 'CPF deve conter exatamente 11 números.', true);
-                return;
-            }
-
-            if (!isValidPhone(phone)) {
-                showMessage('newUserMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
-                return;
-            }
-
-            if (users.some(u => u.login === login)) {
-                showMessage('newUserMessageArea', 'Login já existe.', true);
-                return;
-            }
-
-            if (users.some(u => u.cpf === cpf)) {
-                showMessage('newUserMessageArea', 'CPF já cadastrado.', true);
-                return;
-            }
-
-            const newUser = {
-                id: Date.now(),
-                name,
-                birth,
-                cpf,
-                phone,
-                address,
-                email,
-                login,
-                password,
-                isAdmin: false  // Novos usuários não são admin
-            };
-
-            users.push(newUser);
-            showMessage('newUserMessageArea', '✅ Usuário cadastrado com sucesso!');
-            
-            // Limpar formulário
-            document.getElementById('newUserName').value = '';
-            document.getElementById('newUserBirth').value = '';
-            document.getElementById('newUserCPF').value = '';
-            document.getElementById('newUserPhone').value = '';
-            document.getElementById('newUserAddress').value = '';
-            document.getElementById('newUserEmail').value = '';
-            document.getElementById('newUserLogin').value = '';
-            document.getElementById('newUserPassword').value = '';
-            
-            setTimeout(() => showMainMenu(), 2000);
         }
 
         // Criar usuário via auto-cadastro (público)
@@ -894,10 +717,6 @@
             }
             let isAdmin = false;
             if (adminCode) {
-                if (!/^\d{6}$/.test(adminCode)) {
-                    showMessage('selfRegMessageArea', 'O código de administrador deve conter exatamente 6 números.', true);
-                    return;
-                }
                 if (adminCode !== '123456') {
                     showMessage('selfRegMessageArea', 'Código de administrador inválido.', true);
                     return;
