@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="motionkys.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="motionkys.ico">
+    <link rel="icon" href="motionkys.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gerenciamento de Usuários</title>
     <style>
@@ -324,21 +327,11 @@
 </head>
 <body>
     
-    <div id="firstUserModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-icon">⚙️</div>
-            <h2>Sistema não configurado</h2>
-            <p>Nenhum usuário foi encontrado no sistema. Para começar a usar, é necessário cadastrar o primeiro usuário que terá acesso administrativo.</p>
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" onclick="closeFirstUserModal()">Cancelar</button>
-                <button class="modal-btn primary" onclick="proceedToFirstUser()">Configurar Sistema</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal removido -->
 
     <div class="container">
         <!-- Tela de Login -->
-        <div id="loginScreen">
+    <div id="loginScreen">
             <div class="header">
                 <h1>👌MotionKey</h1>
                 <p>Acesse sua conta</p>
@@ -359,64 +352,13 @@
             </div>
             
             <button class="btn" onclick="login()">Entrar</button>
-            <div id="createAccountSection" class="hidden" style="margin-top: 1rem; text-align: center;">
+            <div id="createAccountSection" style="margin-top: 1rem; text-align: center;">
                 <p style="color: #666; margin-bottom: 0.5rem;">Não tem conta?</p>
                 <button class="btn secondary" onclick="showSelfRegistration()">Criar Conta</button>
             </div>
         </div>
 
-        <!-- Formulário do Primeiro Usuário -->
-        <div id="firstUserScreen" class="hidden">
-            <div class="header">
-                <h1>⚙️ Primeiro Usuário</h1>
-                <p>Configure o sistema cadastrando o primeiro usuário</p>
-            </div>
-            
-            <div id="firstUserMessageArea"></div>
-            
-            <div class="form-group">
-                <label for="firstUserName">Nome Completo:</label>
-                <input type="text" id="firstUserName" placeholder="Digite o nome completo">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserBirth">Data de Nascimento:</label>
-                <input type="date" id="firstUserBirth">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserCPF">CPF (somente números):</label>
-                <input type="text" id="firstUserCPF" placeholder="12345678901">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserPhone">Telefone (somente números):</label>
-                <input type="text" id="firstUserPhone" placeholder="11987654321">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserAddress">Endereço:</label>
-                <input type="text" id="firstUserAddress" placeholder="Rua, número, bairro">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserEmail">Email (opcional):</label>
-                <input type="email" id="firstUserEmail" placeholder="email@exemplo.com">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserLogin">Login:</label>
-                <input type="text" id="firstUserLogin" placeholder="Digite o login">
-            </div>
-            
-            <div class="form-group">
-                <label for="firstUserPassword">Senha:</label>
-                <input type="password" id="firstUserPassword" placeholder="Digite a senha">
-            </div>
-            
-            <button class="btn" onclick="createFirstUser()">Cadastrar Primeiro Usuário</button>
-            <button class="btn secondary" onclick="showLoginScreen()">Voltar ao Login</button>
-        </div>
+        <!-- Formulário do Primeiro Usuário removido -->
 
         <!-- Menu Principal -->
         <div id="mainMenu" class="hidden">
@@ -428,7 +370,7 @@
             <div id="mainMenuMessageArea"></div>
             
             <div class="menu-buttons">
-                <button class="btn" onclick="showNewUserForm()">1 - Cadastrar Usuário</button>
+                <button class="btn" onclick="showEditProfile()">1 - Editar Perfil de Usuário</button>
                 <button class="btn" onclick="showGestureMenu()">2 - Adicionar Gesto</button>
                 <button class="btn" onclick="showRelationMenu()">3 - Reorganizar Relação</button>
                 <button class="btn" id="deleteUserBtn" onclick="showDeleteUserMenu()">4 - Deletar Usuário</button>
@@ -437,62 +379,52 @@
             </div>
         </div>
 
-        <!-- Cadastro de Novo Usuário -->
-        <div id="newUserScreen" class="hidden">
+        <!-- Cadastro de Novo Usuário removido -->
+        <!-- Tela de edição de perfil -->
+        <div id="editProfileScreen" class="hidden">
             <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
-            
             <div class="header">
-                <h1>👤 Novo Usuário</h1>
-                <p>Cadastre um novo usuário no sistema</p>
+                <h1>✏️ Editar Perfil</h1>
+                <p>Atualize seus dados de usuário</p>
             </div>
-            
-            <div id="newUserMessageArea"></div>
-            
+            <div id="editProfileMessageArea"></div>
             <div class="form-group">
-                <label for="newUserName">Nome Completo:</label>
-                <input type="text" id="newUserName" placeholder="Digite o nome completo">
+                <label for="editProfileName">Nome Completo:</label>
+                <input type="text" id="editProfileName" placeholder="Digite o nome completo">
             </div>
-            
             <div class="form-group">
-                <label for="newUserBirth">Data de Nascimento:</label>
-                <input type="date" id="newUserBirth">
+                <label for="editProfileBirth">Data de Nascimento:</label>
+                <input type="date" id="editProfileBirth">
             </div>
-            
             <div class="form-group">
-                <label for="newUserCPF">CPF (somente números):</label>
-                <input type="text" id="newUserCPF" placeholder="12345678901">
+                <label for="editProfileCPF">CPF (somente números):</label>
+                <input type="text" id="editProfileCPF" placeholder="12345678901" disabled>
             </div>
-            
             <div class="form-group">
-                <label for="newUserPhone">Telefone (somente números):</label>
-                <input type="text" id="newUserPhone" placeholder="11987654321">
+                <label for="editProfilePhone">Telefone (somente números):</label>
+                <input type="text" id="editProfilePhone" placeholder="11987654321">
             </div>
-            
             <div class="form-group">
-                <label for="newUserAddress">Endereço:</label>
-                <input type="text" id="newUserAddress" placeholder="Rua, número, bairro">
+                <label for="editProfileAddress">Endereço:</label>
+                <input type="text" id="editProfileAddress" placeholder="Rua, número, bairro">
             </div>
-            
             <div class="form-group">
-                <label for="newUserEmail">Email (opcional):</label>
-                <input type="email" id="newUserEmail" placeholder="email@exemplo.com">
+                <label for="editProfileEmail">Email (opcional):</label>
+                <input type="email" id="editProfileEmail" placeholder="email@exemplo.com">
             </div>
-            
             <div class="form-group">
-                <label for="newUserLogin">Login:</label>
-                <input type="text" id="newUserLogin" placeholder="Digite o login">
+                <label for="editProfileLogin">Login:</label>
+                <input type="text" id="editProfileLogin" placeholder="Digite o login" disabled>
             </div>
-            
             <div class="form-group">
-                <label for="newUserPassword">Senha:</label>
-                <input type="password" id="newUserPassword" placeholder="Digite a senha">
+                <label for="editProfilePassword">Senha:</label>
+                <input type="password" id="editProfilePassword" placeholder="Digite a senha">
             </div>
-            
-            <button class="btn" onclick="createNewUser()">Cadastrar Usuário</button>
+            <button class="btn" onclick="saveProfileEdit()">Salvar Alterações</button>
         </div>
 
         
-        <div id="selfRegistrationScreen" class="hidden">
+    <div id="selfRegistrationScreen" class="hidden">
             <button class="back-btn" onclick="showLoginScreen()">← Voltar ao Login</button>
             
             <div class="header">
@@ -541,7 +473,10 @@
                 <label for="selfRegPassword">Senha:</label>
                 <input type="password" id="selfRegPassword" placeholder="Digite a senha">
             </div>
-            
+            <div class="form-group">
+                <label for="selfRegAdminCode">Código de Administrador (opcional):</label>
+                <input type="text" id="selfRegAdminCode" placeholder="Digite o código de 6 números">
+            </div>
             <button class="btn" onclick="createSelfRegistration()">Criar Conta</button>
         </div>
 
@@ -630,29 +565,62 @@
             return /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
         }
 
-        // Função para mostrar/ocultar opção de criar conta
-        function updateCreateAccountOption() {
-            const createAccountSection = document.getElementById('createAccountSection');
-            // Mostra opção de criar conta se já existe pelo menos um usuário (admin)
-            if (users.length > 0) {
-                createAccountSection.classList.remove('hidden');
-            } else {
-                createAccountSection.classList.add('hidden');
+        // Função para mostrar tela de edição de perfil
+        function showEditProfile() {
+            if (!currentUser) {
+                showMessage('mainMenuMessageArea', 'Você precisa estar logado para editar seu perfil.', true);
+                return;
             }
+            showScreen('editProfileScreen');
+            // Preenche os campos com dados do usuário atual
+            document.getElementById('editProfileName').value = currentUser.name;
+            document.getElementById('editProfileBirth').value = currentUser.birth;
+            document.getElementById('editProfileCPF').value = currentUser.cpf;
+            document.getElementById('editProfilePhone').value = currentUser.phone;
+            document.getElementById('editProfileAddress').value = currentUser.address;
+            document.getElementById('editProfileEmail').value = currentUser.email;
+            document.getElementById('editProfileLogin').value = currentUser.login;
+            document.getElementById('editProfilePassword').value = currentUser.password;
+        }
+
+        // Função para salvar edição de perfil
+        function saveProfileEdit() {
+            const name = document.getElementById('editProfileName').value;
+            const birth = document.getElementById('editProfileBirth').value;
+            const phone = document.getElementById('editProfilePhone').value;
+            const address = document.getElementById('editProfileAddress').value;
+            const email = document.getElementById('editProfileEmail').value;
+            const password = document.getElementById('editProfilePassword').value;
+            if (!name || !birth || !phone || !address || !password) {
+                showMessage('editProfileMessageArea', 'Preencha todos os campos obrigatórios.', true);
+                return;
+            }
+            if (!isValidName(name)) {
+                showMessage('editProfileMessageArea', 'Nome deve conter apenas letras e espaços.', true);
+                return;
+            }
+            if (!isValidPhone(phone)) {
+                showMessage('editProfileMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
+                return;
+            }
+            // Atualiza dados do usuário atual
+            currentUser.name = name;
+            currentUser.birth = birth;
+            currentUser.phone = phone;
+            currentUser.address = address;
+            currentUser.email = email;
+            currentUser.password = password;
+            showMessage('editProfileMessageArea', '✅ Perfil atualizado com sucesso!');
+            setTimeout(() => showMainMenu(), 2000);
         }
 
         // Navegação entre telas
         function showScreen(screenId) {
-            const screens = ['loginScreen', 'firstUserScreen', 'mainMenu', 'newUserScreen', 'selfRegistrationScreen', 'deleteUserScreen', 'developmentScreen'];
+            const screens = ['selfRegistrationScreen', 'loginScreen', 'mainMenu', 'editProfileScreen', 'deleteUserScreen', 'developmentScreen'];
             screens.forEach(screen => {
                 document.getElementById(screen).classList.add('hidden');
             });
             document.getElementById(screenId).classList.remove('hidden');
-            
-            // Atualiza opção de criar conta na tela de login
-            if (screenId === 'loginScreen') {
-                updateCreateAccountOption();
-            }
         }
 
         function showLoginScreen() {
@@ -897,38 +865,45 @@
             const email = document.getElementById('selfRegEmail').value;
             const login = document.getElementById('selfRegLogin').value;
             const password = document.getElementById('selfRegPassword').value;
+            const adminCode = document.getElementById('selfRegAdminCode') ? document.getElementById('selfRegAdminCode').value : '';
 
             // Validações
             if (!name || !birth || !cpf || !phone || !address || !login || !password) {
                 showMessage('selfRegMessageArea', 'Por favor, preencha todos os campos obrigatórios.', true);
                 return;
             }
-
             if (!isValidName(name)) {
                 showMessage('selfRegMessageArea', 'Nome deve conter apenas letras e espaços.', true);
                 return;
             }
-
             if (!isValidCPF(cpf)) {
                 showMessage('selfRegMessageArea', 'CPF deve conter exatamente 11 números.', true);
                 return;
             }
-
             if (!isValidPhone(phone)) {
                 showMessage('selfRegMessageArea', 'Telefone deve conter 10 ou 11 números.', true);
                 return;
             }
-
             if (users.some(u => u.login === login)) {
                 showMessage('selfRegMessageArea', 'Login já existe.', true);
                 return;
             }
-
             if (users.some(u => u.cpf === cpf)) {
                 showMessage('selfRegMessageArea', 'CPF já cadastrado.', true);
                 return;
             }
-
+            let isAdmin = false;
+            if (adminCode) {
+                if (!/^\d{6}$/.test(adminCode)) {
+                    showMessage('selfRegMessageArea', 'O código de administrador deve conter exatamente 6 números.', true);
+                    return;
+                }
+                if (adminCode !== '123456') {
+                    showMessage('selfRegMessageArea', 'Código de administrador inválido.', true);
+                    return;
+                }
+                isAdmin = true;
+            }
             const newUser = {
                 id: Date.now(),
                 name,
@@ -939,12 +914,10 @@
                 email,
                 login,
                 password,
-                isAdmin: false  // Auto-cadastro nunca é admin
+                isAdmin
             };
-
             users.push(newUser);
-            showMessage('selfRegMessageArea', '✅ Conta criada com sucesso!');
-            
+            showMessage('selfRegMessageArea', '✅ Conta criada com sucesso!' + (isAdmin ? ' (Administrador)' : ''));
             // Limpar formulário
             document.getElementById('selfRegName').value = '';
             document.getElementById('selfRegBirth').value = '';
@@ -954,7 +927,7 @@
             document.getElementById('selfRegEmail').value = '';
             document.getElementById('selfRegLogin').value = '';
             document.getElementById('selfRegPassword').value = '';
-            
+            if (document.getElementById('selfRegAdminCode')) document.getElementById('selfRegAdminCode').value = '';
             setTimeout(() => {
                 showLoginScreen();
                 showMessage('messageArea', '✅ Conta criada! Faça login para continuar.');
@@ -1020,26 +993,19 @@
 
         // Eventos de teclado para login
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializa a opção de criar conta
-            updateCreateAccountOption();
-            
-            document.getElementById('loginInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('passwordInput').focus();
-                }
-            });
-
-            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
- 
-            document.getElementById('firstUserModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeFirstUserModal();
-                }
-            });
+            showScreen('loginScreen');
+            if (document.getElementById('loginInput')) {
+                document.getElementById('loginInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('passwordInput').focus();
+                    }
+                });
+                document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            }
         });
     </script>
 </body>
