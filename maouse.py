@@ -68,8 +68,6 @@ def main():
         frame = hand_detector.find_hands(frame)
         landmarks_list, bounding_box = hand_detector.find_position(frame)
 
-        frame = cv2.flip(frame, 1)  # Inverte horizontalmente
-
         # Área útil do mouse
         cv2.rectangle(frame, (FRAME_REDUCTION, FRAME_REDUCTION),
                       (CAM_WIDTH - FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION),
