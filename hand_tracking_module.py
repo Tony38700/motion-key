@@ -91,46 +91,47 @@ class HandDetector:
         return image, [coord_x_1, coord_x_2, coord_y_1, coord_y_2, center_x, center_y]
 
 
-# Funções auxiliares para gestos
-def verificar_dedos_levantados(landmarks_list):
+# Funções para gestos complementares
+def check_fingers_up(landmarks_list):
     """Verifica quais dedos estão levantados com base nos landmarks."""
-    dedos = [0, 0, 0, 0, 0]  # [polegar, indicador, medio, anelar, minimo]
+    fingers = [0, 0, 0, 0, 0]  # [polegar, indicador, medio, anelar, minimo]
 
     # Pontas dos dedos e suas juntas de referência
-    pontos_referencia = [
-        (4, 3, 2, 'x'),  # Polegar (usa coordenada x)
-        (8, 6, 7, 'y'),  # Indicador
+    reference_points = [
+        (4, 3, 2, 'x'),   # Polegar (usa coordenada x)
+        (8, 6, 7, 'y'),   # Indicador
         (12, 10, 11, 'y'),  # Médio
         (16, 14, 15, 'y'),  # Anelar
-        (20, 18, 19, 'y')  # Mínimo
+        (20, 18, 19, 'y')   # Mínimo
     ]
 
-    for i, (ponta, junta1, junta2, eixo) in enumerate(pontos_referencia):
-        if i == 0:  # Polegar (lógica especial)
-            if landmarks_list[ponta][1] > landmarks_list[junta1][1]:
-                dedos[0] = 1
+    for i, (tip, joint1, joint2, axis) in enumerate(reference_points):
+        if i == 0:  # Polegar
+            # INVERTIDO: polegar para dentro (abaixado) quando está à esquerda da junta
+            if landmarks_list[tip][1] < landmarks_list[joint1][1]:
+                fingers[0] = 1
         else:  # Outros dedos
-            if landmarks_list[ponta][2] < landmarks_list[junta1][2]:
-                dedos[i] = 1
+            if landmarks_list[tip][2] < landmarks_list[joint1][2]:
+                fingers[i] = 1
 
-    return dedos
+    return fingers
 
 
-def verificar_gesto_saida(dedos):
-    """Verifica gesto de saída: polegar levantado + outros dedos abaixados."""
-    return (dedos[0] == 1 and  # Polegar levantado
-            all(d == 0 for d in dedos[1:]))  # Todos os outros dedos abaixados
+def check_exit_gesture(fingers):
+    """Verifica gesto de saída: todos dedos abaixados."""
+    return (fingers[0] == 1 and
+            all(d == 0 for d in fingers[1:]))
 
-def verificar_clique_duplo(dedos):
-    """Verifica gesto de clique duplo: todos dedos abaixados."""
-    return all(d == 0 for d in dedos)
+def check_double_click(fingers):
+    """Verifica gesto de clique duplo: polegar levantado + outros abaixados."""
+    return all(d == 0 for d in fingers)
 
-def verificar_scroll_up(dedos):
-    """Verifica gesto de scroll up: Polegar + Indicador levantados, outros abaixados."""
-    return (dedos[0] == 1 and dedos[1] == 1 and  # Polegar + Indicador levantados
-            all(d == 0 for d in dedos[2:]))      # Médio, Anelar, Mínimo abaixados
+def check_scroll_up(fingers):
+    """Verifica gesto de scroll up: Indicador levantado, outros abaixados."""
+    return (fingers[0] == 1 and fingers[1] == 1 and
+            all(d == 0 for d in fingers[2:]))
 
-def verificar_scroll_down(dedos):
-    """Verifica gesto de scroll down: Polegar + Mindinho levantados, outros abaixados."""
-    return (dedos[0] == 1 and dedos[4] == 1 and  # Polegar + Mindinho levantados
-            all(d == 0 for d in dedos[1:4]))     # Indicador, Médio, Anelar abaixados
+def check_scroll_down(fingers):
+    """Verifica gesto de scroll down: Mindinho levantado, outros abaixados."""
+    return (fingers[0] == 1 and fingers[4] == 1 and
+            all(d == 0 for d in fingers[1:4]))
