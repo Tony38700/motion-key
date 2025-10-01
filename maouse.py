@@ -3,9 +3,9 @@ import numpy as np
 import time
 import autopy
 import pyautogui # Para scroll
-from hand_tracking_module import HandDetector, verificar_dedos_levantados, \
-    verificar_gesto_saida, verificar_clique_duplo, verificar_scroll_up, \
-    verificar_scroll_down
+from hand_tracking_module import HandDetector, check_fingers_up, \
+    check_exit_gesture, check_double_click, check_scroll_up, \
+    check_scroll_down
 
 """""""""
 Movimento: Polegar + Indicador + Médio levantados ✌️
@@ -45,11 +45,11 @@ def main():
     curr_drag_x, curr_drag_y = 0, 0
 
     # 2. Estados das variáveis
-    mouse_travado = False
-    drag_ativo = False
-    ultimo_clique = 0
-    ultimo_duplo_clique = 0
-    ultimo_scroll = 0
+    mouse_locked = False
+    drag_active = False
+    last_click = 0
+    last_double_click = 0
+    last_scroll = 0
     clique_cooldown = 1.0
     scroll_cooldown = 0.5
     exit_gesture_start_time = 0
@@ -75,7 +75,7 @@ def main():
 
         if landmarks_list:
             # 4. DETECÇÃO DE GESTOS
-            dedos = verificar_dedos_levantados(landmarks_list)
+            fingers = check_fingers_up(landmarks_list)
             thumb_x, thumb_y = landmarks_list[4][1], landmarks_list[4][2]
             index_x, index_y = landmarks_list[8][1], landmarks_list[8][2]
             middle_x, middle_y = landmarks_list[12][1], landmarks_list[12][2]
@@ -90,24 +90,24 @@ def main():
 
             # 6. GESTOS PRINCIPAIS
             # 6.1. Clique Duplo
-            if verificar_clique_duplo(dedos) and not drag_ativo:
-                tempo_atual = time.time()
-                if tempo_atual - ultimo_duplo_clique > DOUBLE_CLICK_COOLDOWN:
+            if check_double_click(fingers) and not drag_active:
+                current_time = time.time()
+                if current_time - last_double_click > DOUBLE_CLICK_COOLDOWN:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.LEFT)
                         time.sleep(0.1)
                         autopy.mouse.click(autopy.mouse.Button.LEFT)
                         cv2.putText(frame, "CLIQUE DUPLO!", (10, 240),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-                        ultimo_duplo_clique = tempo_atual
+                        last_double_click = current_time
                         print("Clique duplo executado!")
                         time.sleep(0.3)
                     except Exception as e:
                         print(f"Erro no clique duplo: {e}")
 
             # 6.2. Arrasto
-            elif (dedos[0] == 0 and dedos[2] == 1 and
-                  dedos[3] == 1 and dedos[4] == 1):
+            elif (fingers[0] == 0 and fingers[2] == 1 and
+                  fingers[3] == 1 and fingers[4] == 1):
                 distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
 
                 if distancia < DRAG_DISTANCE_THRESHOLD:
@@ -118,9 +118,9 @@ def main():
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
 
                 if distancia < DRAG_DISTANCE_THRESHOLD:
-                    if not drag_ativo:
+                    if not drag_active:
                         autopy.mouse.toggle(autopy.mouse.Button.LEFT, True)
-                        drag_ativo = True
+                        drag_active = True
                         cv2.putText(frame, "ARRASTANDO", (10, 150),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                         print("Arrasto ativado")
@@ -137,44 +137,44 @@ def main():
                     prev_drag_x, prev_drag_y = curr_drag_x, curr_drag_y
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
                 else:
-                    if drag_ativo:
+                    if drag_active:
                         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
-                        drag_ativo = False
+                        drag_active = False
                         cv2.putText(frame, "ARRASTO LIBERADO", (10, 150),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                         print("Arrasto desativado")
 
             # 6.3. Scroll Up
-            elif verificar_scroll_up(dedos) and not drag_ativo:
-                tempo_atual = time.time()
-                if tempo_atual - ultimo_scroll > scroll_cooldown:
+            elif check_scroll_up(fingers) and not drag_active:
+                current_time = time.time()
+                if current_time - last_scroll > scroll_cooldown:
                     try:
                         pyautogui.scroll(200)
                         cv2.putText(frame, "SCROLL UP", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                        ultimo_scroll = tempo_atual
+                        last_scroll = current_time
                     except Exception as e:
                         print(f"Erro no scroll up: {e}")
 
             # 6.4. Scroll Down
-            elif verificar_scroll_down(dedos) and not drag_ativo:
-                tempo_atual = time.time()
-                if tempo_atual - ultimo_scroll > scroll_cooldown:
+            elif check_scroll_down(fingers) and not drag_active:
+                current_time = time.time()
+                if current_time - last_scroll > scroll_cooldown:
                     try:
                         pyautogui.scroll(-200)
                         cv2.putText(frame, "SCROLL DOWN", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 165, 0), 2)
-                        ultimo_scroll = tempo_atual
+                        last_scroll = current_time
                         time.sleep(0.1)
                     except Exception as e:
                         print(f"Erro no scroll down: {e}")
 
             # 6.5. Movimento do Mouse
-            elif (dedos[1] == 1 and dedos[2] == 1 and
-                  all(d == 0 for d in [dedos[3], dedos[4]]) and not drag_ativo):
+            elif (fingers[1] == 1 and fingers[2] == 1 and
+                all(d == 0 for d in [fingers[3], fingers[4]]) and not drag_active):
 
-                mouse_travado = (dedos[0] == 0)
-                if not mouse_travado:
+                mouse_locked = (fingers[0] == 0)  # Trava quando polegar para o lado (0)
+                if not mouse_locked:
                     cursor_x = (index_x + middle_x) // 2
                     cursor_y = (index_y + middle_y) // 2
 
@@ -190,57 +190,57 @@ def main():
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
                     cv2.line(frame, (index_x, index_y), (middle_x, middle_y), (255, 0, 0), 2)
 
-                status_mouse = "MOUSE TRAVADO" if mouse_travado else "MOUSE LIVRE"
+                status_mouse = "MOUSE TRAVADO" if mouse_locked else "MOUSE LIVRE"
                 cv2.putText(frame, status_mouse, (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-                            (0, 255, 0) if not mouse_travado else (0, 0, 255), 2)
+                            (0, 255, 0) if not mouse_locked else (0, 0, 255), 2)
 
             # 6.6. Clique Direito
-            elif (dedos[0] == 0 and dedos[1] == 1 and
-                  all(d == 0 for d in dedos[2:]) and not drag_ativo):
+            elif (fingers[0] == 0 and fingers[1] == 1 and
+                  all(d == 0 for d in [fingers[2], fingers[3], fingers[4]]) and not drag_active):
 
-                tempo_atual = time.time()
-                if tempo_atual - ultimo_clique > clique_cooldown:
+                current_time = time.time()
+                if current_time - last_click > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.RIGHT)
                         time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE DIREITO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-                        ultimo_clique = tempo_atual
+                        last_click = current_time
                         print("Clique direito executado!")
                         time.sleep(0.2)
                     except Exception as e:
                         print(f"Erro no clique direito: {e}")
 
             # 6.7. Clique Esquerdo
-            elif (dedos[0] == 0 and dedos[2] == 1 and
-                  dedos[1] == 0 and all(d == 0 for d in [dedos[3], dedos[4]]) and not drag_ativo):
+            elif (fingers[0] == 0 and fingers[2] == 1 and
+                  all(d == 0 for d in [fingers[1], fingers[3], fingers[4]]) and not drag_active):
 
-                tempo_atual = time.time()
-                if tempo_atual - ultimo_clique > clique_cooldown:
+                current_time = time.time()
+                if current_time - last_click > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.LEFT)
                         time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE ESQUERDO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-                        ultimo_clique = tempo_atual
+                        last_click = current_time
                         print("Clique esquerdo executado!")
                         time.sleep(0.2)
                     except Exception as e:
                         print(f"Erro no clique esquerdo: {e}")
 
             # 7. Limpeza do arrasto
-            elif drag_ativo:
+            elif drag_active:
                 autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
-                drag_ativo = False
+                drag_active = False
                 print("Arrasto desativado (gesto mudou)")
 
             # 8. Informações na tela
-            status_dedos = f"P:{dedos[0]} I:{dedos[1]} M:{dedos[2]} A:{dedos[3]} Mi:{dedos[4]}"
-            cv2.putText(frame, status_dedos, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            stats_fingers = f"P:{fingers[0]} I:{fingers[1]} M:{fingers[2]} A:{fingers[3]} Mi:{fingers[4]}"
+            cv2.putText(frame, stats_fingers, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-            status_arrasto = "ARRASTO: ATIVO" if drag_ativo else "ARRASTO: INATIVO"
+            status_arrasto = "ARRASTO: ATIVO" if drag_active else "ARRASTO: INATIVO"
             cv2.putText(frame, status_arrasto, (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-                        (0, 0, 255) if drag_ativo else (0, 255, 0), 2)
+                        (0, 0, 255) if drag_active else (0, 255, 0), 2)
 
         # 9. FPS
         curr_time = time.time()
@@ -257,25 +257,25 @@ def main():
             break
 
         # Mão fechada
-        if landmarks_list and verificar_gesto_saida(dedos):
+        if landmarks_list and check_exit_gesture(fingers):
             if not exit_gesture_active:
                 exit_gesture_start_time = time.time()
                 exit_gesture_active = True
 
-            tempo_decorrido = time.time() - exit_gesture_start_time
-            tempo_restante = EXIT_GESTURE_TIME - tempo_decorrido
+            elapsed_time = time.time() - exit_gesture_start_time
+            remaining_time = EXIT_GESTURE_TIME - elapsed_time
 
             # Feedback visual do gesto de saída
-            cv2.putText(frame, f"SAIR: {tempo_restante:.1f}s", (10, 270),
+            cv2.putText(frame, f"SAIR: {remaining_time:.1f}s", (10, 270),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
             # Barra de progresso
-            progresso = int((tempo_decorrido / EXIT_GESTURE_TIME) * 100)
+            progresso = int((elapsed_time / EXIT_GESTURE_TIME) * 100)
             cv2.rectangle(frame, (10, 290), (10 + progresso * 2, 310),
                           (0, 0, 255), cv2.FILLED)
             cv2.rectangle(frame, (10, 290), (210, 310), (255, 255, 255), 2)
 
-            if tempo_decorrido >= EXIT_GESTURE_TIME:
+            if elapsed_time >= EXIT_GESTURE_TIME:
                 cv2.putText(frame, "SAINDO...", (CAM_WIDTH // 2 - 100, CAM_HEIGHT // 2),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
                 cv2.imshow('Controle de Mouse por Gestos', frame)
@@ -288,7 +288,7 @@ def main():
         cv2.imshow('Controle de Mouse por Gestos', frame)
 
     # 11. Finalização
-    if drag_ativo:
+    if drag_active:
         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
     camera.release()
     cv2.destroyAllWindows()
