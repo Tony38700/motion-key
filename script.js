@@ -453,8 +453,14 @@ async function loadUsersList() {
             const user = normalizeUser(u);
             const item = document.createElement('div');
             item.className = 'user-item';
-            item.innerHTML = `<div class="user-info"><div class="user-name">${user.name}</div><div class="user-login">${user.login}</div></div>
-                              <button class="delete-btn" onclick="deleteUser('${user.login}')">Deletar</button>`;
+            item.innerHTML = `<div class="user-info"><div class="user-name">${
+                user.name
+            } ${user.isAdmin ? '👑' : ''}</div><div class="user-login">${
+                user.login
+            }</div></div>
+                              <button class="delete-btn" onclick="deleteUser('${
+                                  user.login
+                              }')">Deletar</button>`;
             listDiv.appendChild(item);
         });
     } catch (err) {
