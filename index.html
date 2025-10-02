@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/x-icon" href="motionkys.ico" />
+        <link rel="shortcut icon" type="image/x-icon" href="motionkys.ico" />
+        <link rel="icon" href="motionkys.ico" />
+        <link rel="stylesheet" href="style.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>👌MotionKey</title>
+    </head>
+    <body>
+        <!-- Modal Primeiro Usuário -->
+        <div id="firstUserModal" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-icon">⚙️</div>
+                <h2>Sistema não configurado</h2>
+                <p>
+                    Nenhum usuário encontrado. Cadastre o primeiro usuário para
+                    continuar.
+                </p>
+                <div class="modal-buttons">
+                    <button
+                        class="modal-btn secondary"
+                        onclick="closeFirstUserModal()"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        class="modal-btn primary"
+                        onclick="proceedToFirstUser()"
+                    >
+                        Configurar Sistema
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Tela de Login -->
+            <div id="loginScreen">
+                <div class="header">
+                    <h1>👌MotionKey</h1>
+                    <p>Acesse sua conta</p>
+                </div>
+                <div id="messageArea"></div>
+                <div class="form-group">
+                    <label for="loginInput">Login:</label>
+                    <input
+                        type="text"
+                        id="loginInput"
+                        placeholder="Digite seu login"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="passwordInput">Senha:</label>
+                    <input
+                        type="password"
+                        id="passwordInput"
+                        placeholder="Digite sua senha"
+                    />
+                </div>
+                <button class="btn" onclick="loginUser()">Entrar</button>
+                <div
+                    id="createAccountSection"
+                    style="margin-top: 1rem; text-align: center"
+                >
+                    <p style="color: #666; margin-bottom: 0.5rem">
+                        Não tem conta?
+                    </p>
+                    <button
+                        class="btn secondary"
+                        onclick="showSelfRegistration()"
+                    >
+                        Criar Conta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Primeiro Usuário -->
+            <div id="firstUserScreen" class="hidden">
+                <div class="header">
+                    <h1>⚙️ Primeiro Usuário</h1>
+                    <p>Configure o sistema cadastrando o primeiro usuário</p>
+                </div>
+                <div id="firstUserMessageArea"></div>
+                <div class="form-group">
+                    <label for="firstUserName">Nome Completo:</label>
+                    <input
+                        type="text"
+                        id="firstUserName"
+                        placeholder="Digite o nome completo"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserBirth">Data de Nascimento:</label>
+                    <input type="date" id="firstUserBirth" />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserCPF">CPF (somente números):</label>
+                    <input
+                        type="text"
+                        id="firstUserCPF"
+                        placeholder="12345678901"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserPhone"
+                        >Telefone (somente números):</label
+                    >
+                    <input
+                        type="text"
+                        id="firstUserPhone"
+                        placeholder="11987654321"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserAddress">Endereço:</label>
+                    <input
+                        type="text"
+                        id="firstUserAddress"
+                        placeholder="Rua, número, bairro"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserEmail">Email (opcional):</label>
+                    <input
+                        type="email"
+                        id="firstUserEmail"
+                        placeholder="email@exemplo.com"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserLogin">Login:</label>
+                    <input
+                        type="text"
+                        id="firstUserLogin"
+                        placeholder="Digite o login"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firstUserPassword">Senha:</label>
+                    <input
+                        type="password"
+                        id="firstUserPassword"
+                        placeholder="Digite a senha"
+                    />
+                </div>
+                <button class="btn" onclick="createFirstUser()">
+                    Cadastrar Primeiro Usuário
+                </button>
+                <button class="btn secondary" onclick="showLoginScreen()">
+                    Voltar ao Login
+                </button>
+            </div>
+
+            <!-- Menu Principal -->
+            <div id="mainMenu" class="hidden">
+                <div class="header">
+                    <h1>🏠 Menu Principal</h1>
+                    <p>Bem-vindo ao sistema!</p>
+                </div>
+                <div id="mainMenuMessageArea"></div>
+                <div class="menu-buttons">
+                    <button class="btn" onclick="showEditProfile()">
+                        1 - Editar Perfil de Usuário
+                    </button>
+                    <button class="btn" onclick="showGestureMenu()">
+                        2 - Adicionar Gesto
+                    </button>
+                    <button class="btn" onclick="showRelationMenu()">
+                        3 - Reorganizar Relação
+                    </button>
+                    <button
+                        class="btn"
+                        id="deleteUserBtn"
+                        onclick="showDeleteUserMenu()"
+                    >
+                        4 - Deletar Usuário
+                    </button>
+                    <button
+                        class="btn"
+                        id="runMotionKeyBtn"
+                        onclick="runMotionKey()"
+                    >
+                        <span style="font-size: 1.3em; vertical-align: middle"
+                            >⚙️</span
+                        >
+                        Executar MotionKey (Controle por Gestos)
+                    </button>
+                    <button class="btn secondary" onclick="logout()">
+                        5 - Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tela de edição de perfil -->
+            <div id="editProfileScreen" class="hidden">
+                <button class="back-btn" onclick="showMainMenu()">
+                    ← Voltar
+                </button>
+                <div class="header">
+                    <h1>✏️ Editar Perfil</h1>
+                    <p>Atualize seus dados de usuário</p>
+                </div>
+                <div id="editProfileMessageArea"></div>
+                <div class="form-group">
+                    <label for="editProfileName">Nome Completo:</label>
+                    <input
+                        type="text"
+                        id="editProfileName"
+                        placeholder="Digite o nome completo"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfileBirth">Data de Nascimento:</label>
+                    <input type="date" id="editProfileBirth" />
+                </div>
+                <div class="form-group">
+                    <label for="editProfileCPF">CPF (somente números):</label>
+                    <input
+                        type="text"
+                        id="editProfileCPF"
+                        placeholder="12345678901"
+                        disabled
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfilePhone"
+                        >Telefone (somente números):</label
+                    >
+                    <input
+                        type="text"
+                        id="editProfilePhone"
+                        placeholder="11987654321"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfileAddress">Endereço:</label>
+                    <input
+                        type="text"
+                        id="editProfileAddress"
+                        placeholder="Rua, número, bairro"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfileEmail">Email (opcional):</label>
+                    <input
+                        type="email"
+                        id="editProfileEmail"
+                        placeholder="email@exemplo.com"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfileLogin">Login:</label>
+                    <input
+                        type="text"
+                        id="editProfileLogin"
+                        placeholder="Digite o login"
+                        disabled
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="editProfilePassword">Senha:</label>
+                    <input
+                        type="password"
+                        id="editProfilePassword"
+                        placeholder="Digite a senha"
+                    />
+                </div>
+                <button class="btn" onclick="saveProfileEdit()">
+                    Salvar Alterações
+                </button>
+            </div>
+
+            <!-- Novo Usuário -->
+            <div id="newUserScreen" class="hidden">
+                <button class="back-btn" onclick="showMainMenu()">
+                    ← Voltar
+                </button>
+                <div class="header">
+                    <h1>👤 Novo Usuário</h1>
+                    <p>Cadastre um novo usuário no sistema</p>
+                </div>
+                <div id="newUserMessageArea"></div>
+                <div class="form-group">
+                    <label for="newUserName">Nome Completo:</label>
+                    <input
+                        type="text"
+                        id="newUserName"
+                        placeholder="Digite o nome completo"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserBirth">Data de Nascimento:</label>
+                    <input type="date" id="newUserBirth" />
+                </div>
+                <div class="form-group">
+                    <label for="newUserCPF">CPF (somente números):</label>
+                    <input
+                        type="text"
+                        id="newUserCPF"
+                        placeholder="12345678901"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserPhone"
+                        >Telefone (somente números):</label
+                    >
+                    <input
+                        type="text"
+                        id="newUserPhone"
+                        placeholder="11987654321"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserAddress">Endereço:</label>
+                    <input
+                        type="text"
+                        id="newUserAddress"
+                        placeholder="Rua, número, bairro"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserEmail">Email (opcional):</label>
+                    <input
+                        type="email"
+                        id="newUserEmail"
+                        placeholder="email@exemplo.com"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserLogin">Login:</label>
+                    <input
+                        type="text"
+                        id="newUserLogin"
+                        placeholder="Digite o login"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">Senha:</label>
+                    <input
+                        type="password"
+                        id="newUserPassword"
+                        placeholder="Digite a senha"
+                    />
+                </div>
+                <button class="btn" onclick="createNewUser()">
+                    Cadastrar Usuário
+                </button>
+            </div>
+
+            <!-- Auto-cadastro -->
+            <div id="selfRegistrationScreen" class="hidden">
+                <button class="back-btn" onclick="showLoginScreen()">
+                    ← Voltar ao Login
+                </button>
+                <div class="header">
+                    <h1>📝 Criar Conta</h1>
+                    <p>Cadastre-se para usar o sistema</p>
+                </div>
+                <div id="selfRegMessageArea"></div>
+                <div class="form-group">
+                    <label for="selfRegName">Nome Completo:</label>
+                    <input
+                        type="text"
+                        id="selfRegName"
+                        placeholder="Digite o nome completo"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegBirth">Data de Nascimento:</label>
+                    <input type="date" id="selfRegBirth" />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegCPF">CPF (somente números):</label>
+                    <input
+                        type="text"
+                        id="selfRegCPF"
+                        placeholder="12345678901"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegPhone"
+                        >Telefone (somente números):</label
+                    >
+                    <input
+                        type="text"
+                        id="selfRegPhone"
+                        placeholder="11987654321"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegAddress">Endereço:</label>
+                    <input
+                        type="text"
+                        id="selfRegAddress"
+                        placeholder="Rua, número, bairro"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegEmail">Email (opcional):</label>
+                    <input
+                        type="email"
+                        id="selfRegEmail"
+                        placeholder="email@exemplo.com"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegLogin">Login:</label>
+                    <input
+                        type="text"
+                        id="selfRegLogin"
+                        placeholder="Digite o login"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegPassword">Senha:</label>
+                    <input
+                        type="password"
+                        id="selfRegPassword"
+                        placeholder="Digite a senha"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="selfRegAdminCode"
+                        >Código de Administrador (opcional):</label
+                    >
+                    <input
+                        type="password"
+                        id="selfRegAdminCode"
+                        placeholder="Digite o código de 6 números"
+                    />
+                </div>
+                <button class="btn" onclick="createSelfRegistration()">
+                    Criar Conta
+                </button>
+            </div>
+
+            <!-- Deletar Usuário -->
+            <div id="deleteUserScreen" class="hidden">
+                <button class="back-btn" onclick="showMainMenu()">
+                    ← Voltar
+                </button>
+                <div class="header">
+                    <h1>🗑️ Deletar Usuário</h1>
+                    <p>Selecione um usuário para remover do sistema</p>
+                </div>
+                <div id="deleteUserMessageArea"></div>
+                <div id="usersList" class="user-list"></div>
+            </div>
+
+            <!-- Em desenvolvimento -->
+            <div id="developmentScreen" class="hidden">
+                <button class="back-btn" onclick="showMainMenu()">
+                    ← Voltar
+                </button>
+                <div class="header">
+                    <h1>🚧 Em Desenvolvimento</h1>
+                    <p id="developmentMessage">
+                        Esta funcionalidade está sendo desenvolvida
+                    </p>
+                </div>
+                <div style="text-align: center; padding: 2rem">
+                    <div style="font-size: 4rem; margin-bottom: 1rem">⚙️</div>
+                    <p style="color: #666">Funcionalidade em construção...</p>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
