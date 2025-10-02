@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 import autopy
-import pyautogui # Para scroll
+import pyautogui # Para scroll e minimizar telas
 from hand_tracking_module import HandDetector, check_fingers_up, \
     check_exit_gesture, check_double_click, check_scroll_up, \
     check_scroll_down
@@ -28,6 +28,7 @@ EXIT_GESTURE_TIME = 3.0  # 3 segundos com gesto de saída
 DOUBLE_CLICK_COOLDOWN = 2.0  # 2 segundo entre cliques duplos
 
 def main():
+    pyautogui.hotkey('win', 'd')
     # 1. inicialização
     camera = cv2.VideoCapture(0)
     camera.set(3, CAM_WIDTH)
