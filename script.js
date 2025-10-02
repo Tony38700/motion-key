@@ -1,5 +1,4 @@
 const API_URL = 'http://127.0.0.1:8000';
-let currentUser = null;
 
 function showMessage(containerId, message, isError = false) {
     const container = document.getElementById(containerId);
@@ -73,9 +72,10 @@ async function loginUser() {
 
         const user = await res.json();
         currentUser = normalizeUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showMessage('messageArea', '✅ Login realizado com sucesso!');
-        setTimeout(() => showScreen('mainMenu'), 1500);
+        setTimeout(() => showMainMenu(), 1500);
     } catch (err) {
         showMessage('messageArea', 'Login ou senha incorretos.', true);
     }
@@ -96,6 +96,7 @@ async function showEditProfile() {
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const user = await res.json();
         currentUser = normalizeUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showScreen('editProfileScreen');
 
@@ -164,6 +165,7 @@ async function saveProfileEdit() {
         if (!res.ok) throw new Error('Erro ao atualizar perfil');
         const updated = await res.json();
         currentUser = normalizeUser(updated);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showMessage(
             'editProfileMessageArea',
@@ -205,6 +207,7 @@ async function createFirstUser() {
 
         const user = await res.json();
         currentUser = normalizeUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showMessage('firstUserMessageArea', 'Usuário cadastrado com sucesso!');
         showLoginScreen();
@@ -234,6 +237,7 @@ async function createNewUser() {
 
         const user = await res.json();
         currentUser = normalizeUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showMessage('newUserMessageArea', 'Usuário cadastrado com sucesso!');
         showMainMenu();
@@ -312,6 +316,7 @@ async function createSelfRegistration() {
 
         const user = await res.json();
         currentUser = normalizeUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
         showMessage(
             'selfRegMessageArea',
@@ -353,13 +358,17 @@ function showLoginScreen() {
 }
 
 function showMainMenu() {
+    const userData = localStorage.getItem('currentUser');
+    const user = userData ? JSON.parse(userData) : null;
+
+    if (!user) {
+        showMessage('mainMenuMessageArea', 'Você precisa estar logado.', true);
+        return;
+    }
+
     showScreen('mainMenu');
     const deleteBtn = document.getElementById('deleteUserBtn');
-    if (currentUser && currentUser.isAdmin) {
-        deleteBtn.style.display = 'block';
-    } else {
-        deleteBtn.style.display = 'none';
-    }
+    deleteBtn.style.display = user.isAdmin ? 'block' : 'none';
 }
 
 function showSelfRegistration() {
@@ -367,7 +376,10 @@ function showSelfRegistration() {
 }
 
 function showDeleteUserMenu() {
-    if (!currentUser || !currentUser.isAdmin) {
+    const userData = localStorage.getItem('currentUser');
+    const user = userData ? JSON.parse(userData) : null;
+
+    if (!user || !user.isAdmin) {
         showMessage(
             'mainMenuMessageArea',
             'Acesso negado. Apenas administradores podem deletar usuários.',
@@ -375,6 +387,7 @@ function showDeleteUserMenu() {
         );
         return;
     }
+
     showScreen('deleteUserScreen');
     loadUsersList();
 }
@@ -450,6 +463,9 @@ async function loadUsersList() {
 }
 
 async function deleteUser(login) {
+    const userData = localStorage.getItem('currentUser');
+    const currentUser = userData ? JSON.parse(userData) : null;
+
     if (!currentUser || !currentUser.isAdmin) {
         showMessage(
             'deleteUserMessageArea',
