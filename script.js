@@ -15,8 +15,6 @@ function showScreen(screenId) {
         'editProfileScreen',
         'deleteUserScreen',
         'developmentScreen',
-        'newUserScreen',
-        'firstUserScreen',
     ];
     screens.forEach((screen) => {
         const el = document.getElementById(screen);
@@ -177,75 +175,6 @@ async function saveProfileEdit() {
     }
 }
 
-function closeFirstUserModal() {
-    document.getElementById('firstUserModal').classList.remove('show');
-}
-
-function proceedToFirstUser() {
-    closeFirstUserModal();
-    showScreen('firstUserScreen');
-}
-
-async function createFirstUser() {
-    const data = {
-        name: document.getElementById('firstUserName').value,
-        birth: document.getElementById('firstUserBirth').value,
-        cpf: document.getElementById('firstUserCPF').value,
-        phone: document.getElementById('firstUserPhone').value,
-        address: document.getElementById('firstUserAddress').value,
-        email: document.getElementById('firstUserEmail').value,
-        login: document.getElementById('firstUserLogin').value,
-        password: document.getElementById('firstUserPassword').value,
-    };
-    try {
-        const res = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error('Erro ao cadastrar primeiro usuário');
-
-        const user = await res.json();
-        currentUser = normalizeUser(user);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-        showMessage('firstUserMessageArea', 'Usuário cadastrado com sucesso!');
-        showLoginScreen();
-    } catch (err) {
-        showMessage('firstUserMessageArea', err.message, true);
-    }
-}
-
-async function createNewUser() {
-    const data = {
-        name: document.getElementById('newUserName').value,
-        birth: document.getElementById('newUserBirth').value,
-        cpf: document.getElementById('newUserCPF').value,
-        phone: document.getElementById('newUserPhone').value,
-        address: document.getElementById('newUserAddress').value,
-        email: document.getElementById('newUserEmail').value,
-        login: document.getElementById('newUserLogin').value,
-        password: document.getElementById('newUserPassword').value,
-    };
-    try {
-        const res = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error('Erro ao cadastrar usuário');
-
-        const user = await res.json();
-        currentUser = normalizeUser(user);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-        showMessage('newUserMessageArea', 'Usuário cadastrado com sucesso!');
-        showMainMenu();
-    } catch (err) {
-        showMessage('newUserMessageArea', err.message, true);
-    }
-}
-
 async function createSelfRegistration() {
     const data = {
         name: document.getElementById('selfRegName').value,
@@ -397,10 +326,6 @@ function logout() {
     document.getElementById('loginInput').value = '';
     document.getElementById('passwordInput').value = '';
     showLoginScreen();
-}
-
-function showNewUserForm() {
-    showScreen('newUserScreen');
 }
 
 function showGestureMenu() {
