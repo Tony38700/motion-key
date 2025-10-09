@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -60,6 +61,11 @@ class UserUpdate(BaseModel):
     address: str
     email: Optional[str] = ""
     password: str
+
+
+class RunRequest(BaseModel):
+    # expected values: "right" or "left" (default: right)
+    hand: str = "right"
 
 # DB (simulação em memória)
 users: List[User] = []
@@ -163,17 +169,27 @@ def delete_user(user_id: int):
     raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
 @app.post("/run-motionkey")
-def run_motionkey():
+def run_motionkey(req: RunRequest):
+    # Decide which script to run based on requested hand
+    hand = (req.hand or "right").lower()
+    if hand not in ("right", "left"):
+        raise HTTPException(status_code=400, detail="Parâmetro 'hand' inválido. Use 'right' ou 'left'.")
+
+    script = "maouse.py" if hand == "right" else "maouse_left.py"
+
     try:
+        # Use the same Python interpreter that's running the API to avoid "python" vs "python3" issues
         result = subprocess.run(
-            ["python", "maouse.py"],  # ou "python3" dependendo do ambiente
+            [sys.executable, script],
             capture_output=True,
             text=True,
             check=True
         )
-        return {"detail": "MotionKey executado com sucesso!", "output": result.stdout}
+        return {"detail": f"MotionKey ({hand}) executado com sucesso!", "output": result.stdout}
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail=f"Script '{script}' não encontrado no servidor.")
     except subprocess.CalledProcessError as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao executar MotionKey: {e.stderr}"
+            detail=f"Erro ao executar MotionKey ({hand}): {e.stderr or e.stdout}"
         )
