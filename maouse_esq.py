@@ -8,8 +8,6 @@ from hand_tracking_module_esq import HandDetector, check_fingers_up, \
     check_scroll_down
 
 """""""""
-MOVIMENTO CONFIGURADO PARA MÃO ESQUERDA
-
 Movimento: Polegar + Indicador + Médio levantados ✌️
 Arrasto: Polegar abaixado + Indicador tocando no polegar + outros 3 levantados 👌 
 Clique Esquerdo: Médio levantado + outros abaixados 🖱️🖕
@@ -28,7 +26,6 @@ SMOOTHENING_DRAG = 7  # Suavização do arrasto
 DRAG_DISTANCE_THRESHOLD = 20  # Distância máxima para ativar arrasto
 EXIT_GESTURE_TIME = 3.0  # 3 segundos com gesto de saída
 DOUBLE_CLICK_COOLDOWN = 2.0  # 2 segundo entre cliques duplos
-
 
 def main():
     pyautogui.hotkey('win', 'd')
@@ -131,15 +128,13 @@ def main():
                         prev_drag_x, prev_drag_y = index_x, index_y
 
                     cursor_x, cursor_y = index_x, index_y
-                    # REMOVIDA A INVERSÃO PARA MÃO ESQUERDA
                     mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
                     mapped_y = np.interp(cursor_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
 
                     curr_drag_x = prev_drag_x + (mapped_x - prev_drag_x) / SMOOTHENING_DRAG
                     curr_drag_y = prev_drag_y + (mapped_y - prev_drag_y) / SMOOTHENING_DRAG
 
-                    # REMOVIDA A INVERSÃO HORIZONTAL PARA MÃO ESQUERDA
-                    autopy.mouse.move(curr_drag_x, curr_drag_y)
+                    autopy.mouse.move(screen_width - curr_drag_x, curr_drag_y)
                     prev_drag_x, prev_drag_y = curr_drag_x, curr_drag_y
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
                 else:
@@ -184,15 +179,13 @@ def main():
                     cursor_x = (index_x + middle_x) // 2
                     cursor_y = (index_y + middle_y) // 2
 
-                    # REMOVIDA A INVERSÃO PARA MÃO ESQUERDA
                     mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
                     mapped_y = np.interp(cursor_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
 
                     curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
                     curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
 
-                    # REMOVIDA A INVERSÃO HORIZONTAL PARA MÃO ESQUERDA
-                    autopy.mouse.move(curr_cursor_x, curr_cursor_y)
+                    autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
                     prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
 
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
