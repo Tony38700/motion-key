@@ -36,7 +36,6 @@ function isValidName(name) {
     return /^[a-zA-ZÀ-ÿ\s]+$/.test(name);
 }
 
-// Valida data de nascimento: não permite anos futuros, e não permite idade > 105 anos
 function isValidBirthDate(dateStr) {
     if (!dateStr) return false;
     // Expect format YYYY-MM-DD
@@ -45,7 +44,8 @@ function isValidBirthDate(dateStr) {
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1; // JS months 0-11
     const day = parseInt(parts[2], 10);
-    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) return false;
+    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day))
+        return false;
 
     const birth = new Date(year, month, day);
     if (isNaN(birth.getTime())) return false;
@@ -53,7 +53,6 @@ function isValidBirthDate(dateStr) {
     const today = new Date();
     const thisYear = today.getFullYear();
 
-    // Invalid if year greater than current year
     if (year > thisYear) return false;
 
     // Compute age accurately
@@ -63,7 +62,6 @@ function isValidBirthDate(dateStr) {
         age--;
     }
 
-    // If age negative or greater than 105, invalid
     if (age < 0 || age > 105) return false;
 
     return true;
@@ -123,7 +121,7 @@ async function showEditProfile() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/users/${currentUser.id}`);
+        const res = await fetch(`${API_URL}/users/${currentUser.id_pessoa}`);
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const user = await res.json();
         currentUser = normalizeUser(user);
@@ -162,7 +160,11 @@ async function saveProfileEdit() {
     }
 
     if (!isValidBirthDate(birth)) {
-        showMessage('editProfileMessageArea', 'Data de nascimento inválida. Verifique o ano e a idade (máx 105 anos).', true);
+        showMessage(
+            'editProfileMessageArea',
+            'Data de nascimento inválida. Verifique o ano e a idade (máx 105 anos).',
+            true
+        );
         return;
     }
 
@@ -185,7 +187,8 @@ async function saveProfileEdit() {
     }
 
     try {
-        const res = await fetch(`${API_URL}/users/${currentUser.id}`, {
+        is_admin = currentUser.is_admin;
+        const res = await fetch(`${API_URL}/users/${currentUser.id_pessoa}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -195,6 +198,7 @@ async function saveProfileEdit() {
                 address,
                 email,
                 password,
+                is_admin,
             }),
         });
 
@@ -245,7 +249,11 @@ async function createSelfRegistration() {
         return;
     }
     if (!isValidBirthDate(data.birth)) {
-        showMessage('selfRegMessageArea', 'Data de nascimento inválida. Verifique o ano e a idade (máx 105 anos).', true);
+        showMessage(
+            'selfRegMessageArea',
+            'Data de nascimento inválida. Verifique o ano e a idade (máx 105 anos).',
+            true
+        );
         return;
     }
     if (!isValidName(data.name)) {
@@ -339,7 +347,7 @@ function showMainMenu() {
 
     showScreen('mainMenu');
     const deleteBtn = document.getElementById('deleteUserBtn');
-    deleteBtn.style.display = user.isAdmin ? 'block' : 'none';
+    deleteBtn.style.display = user.is_admin ? 'block' : 'none';
 }
 
 function showSelfRegistration() {
@@ -387,13 +395,12 @@ async function runMotionKey() {
     document.getElementById('developmentMessage').innerText =
         'Executando MotionKey...';
 
-    // Exibe modal de seleção de mão (UI com botões)
     const hand = await showHandModal();
     if (!hand) {
-        document.getElementById('developmentMessage').innerText = 'Execução cancelada.';
+        document.getElementById('developmentMessage').innerText =
+            'Execução cancelada.';
         return;
     }
-
     try {
         const res = await fetch(`${API_URL}/run-motionkey`, {
             method: 'POST',
@@ -402,16 +409,17 @@ async function runMotionKey() {
         });
 
         if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            const msg = err.detail || 'Erro ao executar MotionKey.';
-            document.getElementById('developmentMessage').innerText = `❌ ${msg}`;
-            return;
+            const err = await res.json();
+            throw new Error(err.detail || 'Erro ao executar MotionKey');
         }
 
         const data = await res.json();
-        document.getElementById('developmentMessage').innerText = data.detail || '✅ MotionKey executado.';
+        document.getElementById('developmentMessage').innerText =
+            data.detail || '✅ MotionKey executado.';
     } catch (err) {
-        document.getElementById('developmentMessage').innerText = '❌ Erro ao contatar o servidor.';
+        document.getElementById(
+            'developmentMessage'
+        ).innerText = `❌ ${err.message}`;
     }
 }
 
@@ -425,8 +433,13 @@ function showHandModal() {
 
         if (!overlay || !leftBtn || !rightBtn || !cancelBtn) {
             // fallback para prompt se modal não estiver presente
-            const fallback = prompt('Você é canhoto ou destro? Digite "left" ou "right".', 'right');
-            resolve(fallback && fallback.toLowerCase() === 'left' ? 'left' : 'right');
+            const fallback = prompt(
+                'Você é canhoto ou destro? Digite "left" ou "right".',
+                'right'
+            );
+            resolve(
+                fallback && fallback.toLowerCase() === 'left' ? 'left' : 'right'
+            );
             return;
         }
 
@@ -526,7 +539,7 @@ async function deleteUser(login) {
             return;
         }
 
-        const resDelete = await fetch(`${API_URL}/users/${user.id}`, {
+        const resDelete = await fetch(`${API_URL}/users/${user.id_pessoa}`, {
             method: 'DELETE',
         });
 
@@ -564,15 +577,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     }
-    
-    // Configure os inputs de data para limitar seleção: mínimo = hoje - 105 anos, máximo = hoje
+
+    // Configuração dos inputs de data para limitar seleção: mínimo = hoje - 105 anos, máximo = hoje
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const maxDate = `${yyyy}-${mm}-${dd}`;
     const minDate = `${yyyy - 105}-${mm}-${dd}`;
-    const birthInputs = [document.getElementById('selfRegBirth'), document.getElementById('editProfileBirth')];
+    const birthInputs = [
+        document.getElementById('selfRegBirth'),
+        document.getElementById('editProfileBirth'),
+    ];
     birthInputs.forEach((input) => {
         if (input) {
             input.setAttribute('max', maxDate);
