@@ -4,4 +4,4 @@ pyautogui
 mediapipe
 opencv-python
 psycopg[binary,pool]
-"fastapi[standard]
+"fastapi[standard]"
