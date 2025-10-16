@@ -281,23 +281,40 @@
                         Esta funcionalidade está sendo desenvolvida
                     </p>
                 </div>
-                <div style="text-align: center; padding: 2rem">
-                    <div style="font-size: 4rem; margin-bottom: 1rem">⚙️</div>
-                    <p style="color: #666">Funcionalidade em construção...</p>
+                <div class="development-content">
+                    <div class="development-icon">⚙️</div>
+                    <p class="development-text">
+                        Funcionalidade em construção...
+                    </p>
                 </div>
             </div>
+
             <!-- Modal para seleção de mão (canhoto/destro) -->
             <div id="handModalOverlay" class="modal-overlay" aria-hidden="true">
-                <div class="modal" role="dialog" aria-modal="true" aria-labelledby="handModalTitle">
+                <div
+                    class="modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="handModalTitle"
+                >
                     <div class="modal-icon">🤚</div>
                     <h2 id="handModalTitle">Você é canhoto ou destro?</h2>
-                    <p>Escolha a mão que você utiliza para configurar o MotionKey.</p>
+                    <p>
+                        Escolha a mão que você utiliza para configurar o
+                        MotionKey.
+                    </p>
                     <div class="modal-buttons">
-                        <button id="handLeftBtn" class="modal-btn primary">Canhoto</button>
-                        <button id="handRightBtn" class="modal-btn secondary">Destro</button>
+                        <button id="handLeftBtn" class="modal-btn primary">
+                            Canhoto
+                        </button>
+                        <button id="handRightBtn" class="modal-btn secondary">
+                            Destro
+                        </button>
                     </div>
-                    <div style="margin-top:1rem">
-                        <button id="handCancelBtn" class="modal-btn" style="background:#f1f3f5;color:#6c757d;border-radius:8px;">Cancelar</button>
+                    <div class="modal-cancel">
+                        <button id="handCancelBtn" class="modal-btn cancel-btn">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
             </div>
