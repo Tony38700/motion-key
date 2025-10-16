@@ -1,4 +1,4 @@
-CREATE TABLE Pessoa (
+CREATE TABLE IF NOT EXISTS Pessoa (
     id SERIAL PRIMARY KEY,
     nome_completo VARCHAR(255) NOT NULL,
     data_nascimento DATE NOT NULL,
@@ -8,16 +8,16 @@ CREATE TABLE Pessoa (
     email TEXT
 );
 
-CREATE TABLE Usuario (
+CREATE TABLE IF NOT EXISTS Usuario (
     id_pessoa INT REFERENCES Pessoa(id) ON DELETE CASCADE,
     login VARCHAR(255) UNIQUE NOT NULL,
-    senha_hash VARCHAR(255) NOT NULL
+    senha_hash VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN NOT NULL
 );
 
-CREATE TABLE Historico_acao(
+CREATE TABLE IF NOT EXISTS Historico_acao(
     id SERIAL PRIMARY KEY,
     id_responsavel INT REFERENCES Pessoa(id) ON DELETE CASCADE,
     acao TEXT NOT NULL,
     data_hora_acao TIMESTAMP NOT NULL
-	--gesto NOT NULL
 );
