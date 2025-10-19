@@ -261,6 +261,25 @@ body {
 .development-text {
     color: #666;
 }
+.manual-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    margin: 1rem 0;
+}
+.manual-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+.manual-content li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+.manual-content li strong {
+    color: #222;
+}
 .modal-cancel {
     margin-top: 1rem;
 }
