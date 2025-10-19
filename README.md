@@ -1,5 +1,5 @@
 # MotionKey
-Desenvolvimento de um sistema baseado em inteligência artificial capaz de reconhecer gestos das mãos via webcam e realizar ações específicas em um site, como alterar cores, navegar entre páginas ou executar comandos personalizados. Essa solução visa auxiliar pessoas com deficiências motoras ou limitações a navegarem na web de forma mais acessível.
+Desenvolvimento de um sistema baseado em inteligência artificial capaz de reconhecer gestos das mãos via webcam e realizar ações específicas no computador, como controlar o mouse, dar scroll up/down ou executar comandos personalizados. Essa solução visa auxiliar pessoas com deficiências motoras ou limitações a utilizarem o ambiente digital de forma mais acessível.
 
 ## Participantes
  
