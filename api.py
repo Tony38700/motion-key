@@ -121,7 +121,7 @@ def self_register_user(new_user: UserSelfRegister):
     pessoa.cadastrar_no_banco(dados_pessoa, DB_PARAMS)
     id_pessoa = pessoa.pesquisar_no_banco(new_user.cpf, "cpf", DB_PARAMS)[0][0]
 
-    dados_usuario = {"id_pessoa": id_pessoa, "login": new_user.login, "senha": new_user.password}
+    dados_usuario = {"id_pessoa": id_pessoa, "login": new_user.login, "senha": new_user.password, "is_admin": is_admin}
     usuario.cadastrar_no_banco(dados_usuario, DB_PARAMS)
 
     return {"detail": f"Usuário {new_user.login} registrado com sucesso", "id_pessoa": id_pessoa, "is_admin": is_admin}
