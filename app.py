@@ -1,8 +1,6 @@
 import psycopg
-from pessoa import Pessoa
-from usuario import Usuario
 from credenciais_db import DB_PARAMS
-from argon2 import PasswordHasher, exceptions
+from argon2 import PasswordHasher
 
 ph = PasswordHasher()
 
