@@ -59,21 +59,24 @@
                 </div>
                 <div id="mainMenuMessageArea"></div>
                 <div class="menu-buttons">
+                    <button class="btn" onclick="showManual()">
+                        Manual de Instruções
+                    </button>
                     <button class="btn" onclick="showEditProfile()">
-                        1 - Editar Perfil de Usuário
+                        Editar Perfil de Usuário
                     </button>
                     <button class="btn" onclick="showGestureMenu()">
-                        2 - Adicionar Gesto
+                        Adicionar Gesto
                     </button>
                     <button class="btn" onclick="showRelationMenu()">
-                        3 - Reorganizar Relação
+                        Reorganizar Relação
                     </button>
                     <button
                         class="btn"
                         id="deleteUserBtn"
                         onclick="showDeleteUserMenu()"
                     >
-                        4 - Deletar Usuário
+                        Deletar Usuário
                     </button>
                     <button
                         class="btn"
@@ -86,8 +89,30 @@
                         Executar MotionKey (Controle por Gestos)
                     </button>
                     <button class="btn secondary" onclick="logout()">
-                        5 - Sair
+                        Sair
                     </button>
+                </div>
+            </div>
+
+            <!-- Manual de Instruções -->
+            <div id="manualScreen" class="hidden">
+                <button class="back-btn" onclick="showMainMenu()">← Voltar</button>
+                <div class="header">
+                    <h1>📘 Manual de Instruções</h1>
+                    <p>Como usar o MotionKey</p>
+                </div>
+                <div id="manualContent" class="manual-content">
+                    <ul>
+                        <li><strong>Movimento:</strong> Polegar + Indicador + Médio levantados ✌️</li>
+                        <li><strong>Arrasto:</strong> Polegar abaixado + Indicador tocando no polegar + outros 3 levantados 👌</li>
+                        <li><strong>Clique Esquerdo:</strong> Médio levantado + outros abaixados 🖱️🖕</li>
+                        <li><strong>Clique Direito:</strong> Indicador levantado + outros abaixados 👆🖱️</li>
+                        <li><strong>Clique Duplo:</strong> Todos os dedos abaixados 🖱️👍(-90º)🖱️</li>
+                        <li><strong>Scroll Up:</strong> Polegar + Indicador levantados 👆</li>
+                        <li><strong>Scroll Down:</strong> Polegar + Mindinho levantados 🤟</li>
+                        <li><strong>Sair:</strong> Polegar levantado + outros abaixados (3 segundos) ✊</li>
+                        <li><strong>Será necessário conceder acesso a sua webcam</li>
+                    </ul>
                 </div>
             </div>
 
@@ -307,7 +332,7 @@
                         <button id="handLeftBtn" class="modal-btn primary">
                             Canhoto
                         </button>
-                        <button id="handRightBtn" class="modal-btn secondary">
+                        <button id="handRightBtn" class="modal-btn primary">
                             Destro
                         </button>
                     </div>
