@@ -14,6 +14,7 @@ function showScreen(screenId) {
         'mainMenu',
         'editProfileScreen',
         'deleteUserScreen',
+        'manualScreen',
         'developmentScreen',
     ];
     screens.forEach((screen) => {
@@ -352,6 +353,10 @@ function showMainMenu() {
 
 function showSelfRegistration() {
     showScreen('selfRegistrationScreen');
+}
+
+function showManual() {
+    showScreen('manualScreen');
 }
 
 function showDeleteUserMenu() {
