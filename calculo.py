@@ -12,7 +12,7 @@ class Calculo:
                 saida_dados,
                 resultado,
                 observacoes
-            ) VALUES (%s, %s, %s, %s, %s);
+            ) VALUES (%s, %s, %s, %s, %s, %s);
         ''',
             (
                 dados["data_hora_calculo"],
