@@ -6,6 +6,8 @@ from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from pessoa import Pessoa
 from usuario import Usuario
+from gesto import Gesto
+from calculo import Calculo
 from credenciais_db import DB_PARAMS
 from argon2 import PasswordHasher, exceptions
 
@@ -45,6 +47,21 @@ class UserUpdate(BaseModel):
     email: Optional[str] = ""
     password: str
     is_admin: bool = False
+
+class Gesture(BaseModel):
+    timestamp: str
+    fingers: str
+    gesture_name: str
+    confidence: float
+    hand_position: str
+
+class Calculation(BaseModel):
+    timestamp: str
+    operation_type: str
+    input_data: str
+    output_data: str
+    result: str
+    additional_info: str
 
 class RunRequest(BaseModel):
     # expected values: "right" or "left" (default: right)
@@ -202,3 +219,44 @@ def run_motionkey(req: RunRequest):
             status_code=500,
             detail=f"Erro ao executar MotionKey ({hand}): {e.stderr or e.stdout}"
         )
+
+@app.post('/gesture')
+def register_gesture(gesture: Gesture):
+    gesto = Gesto()
+
+    dados = {
+        'data_hora_gesto': gesture.timestamp,
+        'dedos': gesture.fingers,
+        'nome_gesto': gesture.gesture_name,
+        'confianca': gesture.confidence,
+        'posicao_mao':gesture.hand_position
+    }
+
+    gesto.cadastrar_no_banco(dados, DB_PARAMS)
+
+@app.post('/calculation')
+def register_calculation(calculation: Calculation):
+    calculo = Calculo()
+
+    dados = {
+        'data_hora_calculo': calculation.timestamp,
+        'tipo_operacao': calculation.operation_type,
+        'entrada_dados': calculation.input_data,
+        'saida_dados': calculation.output_data,
+        'resultado':calculation.result,
+        'observacoes':calculation.additional_info
+    }
+
+    calculo.cadastrar_no_banco(dados, DB_PARAMS)
+
+@app.get('/gesture')
+def get_gesture():
+    gesto = Gesto()
+    resultado = gesto.pesquisar_no_banco('%', '', DB_PARAMS)
+    return resultado
+
+@app.get('/calculation')
+def get_calculation():
+    calculo = Calculo()
+    resultado = calculo.pesquisar_no_banco('%', '', DB_PARAMS)
+    return resultado
