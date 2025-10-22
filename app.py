@@ -1,8 +1,5 @@
 import psycopg
 from credenciais_db import DB_PARAMS
-from argon2 import PasswordHasher
-
-ph = PasswordHasher()
 
 def inicializar_banco():
     db_name = DB_PARAMS.get("dbname")
