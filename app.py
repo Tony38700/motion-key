@@ -29,3 +29,6 @@ def inicializar_banco():
         with conn.cursor() as cur:
             cur.execute(script)
     print("✅ Tabelas criadas ou já existentes.\n")
+
+if __name__ == '__main__':
+    inicializar_banco()
