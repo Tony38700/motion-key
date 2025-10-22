@@ -22,17 +22,6 @@ app.add_middleware(
 
 ph = PasswordHasher()
 
-class UserCreate(BaseModel):
-    name: str
-    login: str
-    password: str
-    cpf: str
-    birth: Optional[str] = ""
-    phone: Optional[str] = ""
-    address: Optional[str] = ""
-    email: Optional[str] = ""
-    is_admin: bool = False
-
 class UserSelfRegister(BaseModel):
     name: str
     birth: str
