@@ -50,39 +50,6 @@ class RunRequest(BaseModel):
     # expected values: "right" or "left" (default: right)
     hand: str = "right"
 
-@app.post("/register")
-def register_user(new_user: UserCreate):
-    pessoa = Pessoa()
-    usuario = Usuario()
-
-    if pessoa.pesquisar_no_banco(new_user.cpf, "cpf", DB_PARAMS):
-        raise HTTPException(status_code=400, detail="CPF já cadastrado")
-    if usuario.pesquisar_no_banco(new_user.login, "login", DB_PARAMS):
-        raise HTTPException(status_code=400, detail="Login já existe")
-
-    dados_pessoa = {
-        "nome_completo": new_user.name,
-        "data_nascimento": new_user.birth,
-        "cpf": new_user.cpf,
-        "telefone": new_user.phone,
-        "endereco": new_user.address,
-        "email": new_user.email,
-    }
-    pessoa.cadastrar_no_banco(dados_pessoa, DB_PARAMS)
-
-    result = pessoa.pesquisar_no_banco(new_user.cpf, "cpf", DB_PARAMS)
-    id_pessoa = result[0][0]
-
-    dados_usuario = {
-        "id_pessoa": id_pessoa,
-        "login": new_user.login,
-        "senha": new_user.password,
-        "is_admin": new_user.is_admin
-    }
-    usuario.cadastrar_no_banco(dados_usuario, DB_PARAMS)
-
-    return {"detail": f"Usuário {new_user.login} cadastrado com sucesso", "id_pessoa": id_pessoa}
-
 @app.post("/self-register")
 def self_register_user(new_user: UserSelfRegister):
     pessoa = Pessoa()
