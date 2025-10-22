@@ -3,9 +3,11 @@ import numpy as np
 import time
 import autopy
 import pyautogui # Para scroll e minimizar telas
-from hand_tracking_module import HandDetector, check_fingers_up, \
-    check_exit_gesture, check_double_click, check_scroll_up, \
-    check_scroll_down
+from hand_tracking_module import HandDetector
+from gesture_logger import GestureLogger
+from debug_logger import DebugLogger
+from async_logger import AsyncLogger
+
 
 """""""""
 Movimento: Polegar + Indicador + Médio levantados ✌️
@@ -29,21 +31,26 @@ DOUBLE_CLICK_COOLDOWN = 2.0  # 2 segundo entre cliques duplos
 
 def main():
     pyautogui.hotkey('win', 'd')
-    # 1. inicialização
+    # 1. Inicialização
     camera = cv2.VideoCapture(0)
     camera.set(3, CAM_WIDTH)
     camera.set(4, CAM_HEIGHT)
 
-    # Configurações de detecção
+    # 1.1. Configurações de detecção
     prev_time = 0
     hand_detector = HandDetector(max_hands=1)
 
-    # Configurações de tela e movimento
+    # 1.2. Configurações de tela e movimento
     screen_width, screen_height = autopy.screen.size()
     prev_cursor_x, prev_cursor_y = 0, 0  # Mouse normal
     curr_cursor_x, curr_cursor_y = 0, 0
     prev_drag_x, prev_drag_y = 0, 0  # Arrasto
     curr_drag_x, curr_drag_y = 0, 0
+
+    # 1.3. Conectar as funções
+    gesture_logger = GestureLogger()
+    debug_logger = DebugLogger()
+    async_logger = AsyncLogger(gesture_logger, debug_logger, batch_interval=5.0)  # 5 segundos
 
     # 2. Estados das variáveis
     mouse_locked = False
@@ -55,6 +62,7 @@ def main():
     scroll_cooldown = 0.5
     exit_gesture_start_time = 0
     exit_gesture_active = False
+    fingers = [0, 0, 0, 0, 0]
 
     if not camera.isOpened():
         print("Não foi possível abrir a câmera.")
@@ -76,12 +84,15 @@ def main():
 
         if landmarks_list:
             # 4. DETECÇÃO DE GESTOS
-            fingers = check_fingers_up(landmarks_list)
+            fingers = hand_detector.check_fingers_up(landmarks_list)
             thumb_x, thumb_y = landmarks_list[4][1], landmarks_list[4][2]
             index_x, index_y = landmarks_list[8][1], landmarks_list[8][2]
             middle_x, middle_y = landmarks_list[12][1], landmarks_list[12][2]
-            ring_x, ring_y = landmarks_list[16][1], landmarks_list[16][2]
-            pinky_x, pinky_y = landmarks_list[20][1], landmarks_list[20][2]
+
+            confidence = getattr(hand_detector, 'detection_confidence', None)
+            async_logger.log_gesture(fingers, landmarks_list, hand_detector, confidence, bounding_box)
+            async_logger.log_debug('log_finger_positions', landmarks_list)
+            async_logger.log_debug('log_hand_geometry', landmarks_list)
 
             # 5. Metodo de confiança
             if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
@@ -91,7 +102,7 @@ def main():
 
             # 6. GESTOS PRINCIPAIS
             # 6.1. Clique Duplo
-            if check_double_click(fingers) and not drag_active:
+            if hand_detector.check_double_click(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_double_click > DOUBLE_CLICK_COOLDOWN:
                     try:
@@ -102,6 +113,7 @@ def main():
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                         last_double_click = current_time
                         print("Clique duplo executado!")
+                        async_logger.log_debug('log_double_click', fingers)
                         time.sleep(0.3)
                     except Exception as e:
                         print(f"Erro no clique duplo: {e}")
@@ -110,6 +122,8 @@ def main():
             elif (fingers[0] == 0 and fingers[2] == 1 and
                   fingers[3] == 1 and fingers[4] == 1):
                 distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
+
+                async_logger.log_debug('log_distance_calculation', landmarks_list[4], landmarks_list[8], distancia)
 
                 if distancia < DRAG_DISTANCE_THRESHOLD:
                     cv2.circle(frame, (thumb_x, thumb_y), 10, (0, 255, 255), cv2.FILLED)
@@ -137,6 +151,8 @@ def main():
                     autopy.mouse.move(screen_width - curr_drag_x, curr_drag_y)
                     prev_drag_x, prev_drag_y = curr_drag_x, curr_drag_y
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
+                    async_logger.log_debug('log_drag_operation', fingers, (thumb_x, thumb_y), (index_x, index_y), distancia, drag_active)
+
                 else:
                     if drag_active:
                         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
@@ -146,7 +162,7 @@ def main():
                         print("Arrasto desativado")
 
             # 6.3. Scroll Up
-            elif check_scroll_up(fingers) and not drag_active:
+            elif hand_detector.check_scroll_up(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_scroll > scroll_cooldown:
                     try:
@@ -158,7 +174,7 @@ def main():
                         print(f"Erro no scroll up: {e}")
 
             # 6.4. Scroll Down
-            elif check_scroll_down(fingers) and not drag_active:
+            elif hand_detector.check_scroll_down(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_scroll > scroll_cooldown:
                     try:
@@ -174,7 +190,7 @@ def main():
             elif (fingers[1] == 1 and fingers[2] == 1 and
                 all(d == 0 for d in [fingers[3], fingers[4]]) and not drag_active):
 
-                mouse_locked = (fingers[0] == 0)  # Trava quando polegar para o lado (0)
+                mouse_locked = (fingers[0] == 0)
                 if not mouse_locked:
                     cursor_x = (index_x + middle_x) // 2
                     cursor_y = (index_y + middle_y) // 2
@@ -182,8 +198,13 @@ def main():
                     mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
                     mapped_y = np.interp(cursor_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
 
+                    async_logger.log_debug('log_coordinate_mapping', cursor_x, cursor_y, mapped_x, mapped_y)
+
                     curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
                     curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
+
+                    async_logger.log_debug('log_mouse_movement', fingers, (cursor_x, cursor_y), (mapped_x, mapped_y),
+                                           (curr_cursor_x, curr_cursor_y), mouse_locked)
 
                     autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
                     prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
@@ -258,7 +279,7 @@ def main():
             break
 
         # Mão fechada
-        if landmarks_list and check_exit_gesture(fingers):
+        if landmarks_list and hand_detector.check_exit_gesture(fingers):
             if not exit_gesture_active:
                 exit_gesture_start_time = time.time()
                 exit_gesture_active = True
@@ -289,6 +310,7 @@ def main():
         cv2.imshow('Controle de Mouse por Gestos', frame)
 
     # 11. Finalização
+    async_logger.stop()
     if drag_active:
         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
     camera.release()
