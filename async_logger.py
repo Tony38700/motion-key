@@ -2,15 +2,14 @@ import threading
 import time
 from collections import deque
 
-
 class AsyncLogger:
-    def __init__(self, gesture_logger, debug_logger, batch_interval=2.0):
+    def __init__(self, gesture_logger, calculation_logger, batch_interval=2.0):
         self.gesture_logger = gesture_logger
-        self.debug_logger = debug_logger
+        self.calculation_logger = calculation_logger
         self.batch_interval = batch_interval
 
         self.gesture_queue = deque()
-        self.debug_queue = deque()
+        self.calculation_queue = deque()
         self.last_batch_time = time.time()
 
         self.running = True
@@ -26,8 +25,8 @@ class AsyncLogger:
             'bounding_box': bounding_box
         })
 
-    def log_debug(self, method_name, *args):
-        self.debug_queue.append({
+    def log_calculation(self, method_name, *args):
+        self.calculation_queue.append({
             'method': method_name,
             'args': args
         })
@@ -50,13 +49,13 @@ class AsyncLogger:
             self.gesture_logger.log_gesture(**last_gesture)
             self.gesture_queue.clear()
 
-        # Processa apenas os últimos 5 debug logs (limita quantidade)
-        if self.debug_queue:
-            recent_debugs = list(self.debug_queue)[-5:]  # Últimos 5
-            for debug in recent_debugs:
-                method = getattr(self.debug_logger, debug['method'])
-                method(*debug['args'])
-            self.debug_queue.clear()
+        # Processa apenas os últimos 5 calculation logs (limita quantidade)
+        if self.calculation_queue:
+            recent_calculations = list(self.calculation_queue)[-5:]  # Últimos 5
+            for calculation in recent_calculations:
+                method = getattr(self.calculation_logger, calculation['method'])
+                method(*calculation['args'])
+            self.calculation_queue.clear()
 
     def stop(self):
         self.running = False
