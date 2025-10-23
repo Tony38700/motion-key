@@ -2,7 +2,6 @@ import cv2
 import mediapipe as mp
 import math
 
-
 class HandDetector:
     def __init__(self, mode=False, max_hands=2, detection_confidence=0.5,
                  tracking_confidence=0.5):
@@ -90,48 +89,47 @@ class HandDetector:
 
         return image, [coord_x_1, coord_x_2, coord_y_1, coord_y_2, center_x, center_y]
 
+    # Funções para gestos complementares
+    def check_fingers_up(self, landmarks_list):
+        """Verifica quais dedos estão levantados com base nos landmarks."""
+        fingers = [0, 0, 0, 0, 0]  # [polegar, indicador, medio, anelar, minimo]
 
-# Funções para gestos complementares
-def check_fingers_up(landmarks_list):
-    """Verifica quais dedos estão levantados com base nos landmarks."""
-    fingers = [0, 0, 0, 0, 0]  # [polegar, indicador, medio, anelar, minimo]
+        # Pontas dos dedos e suas juntas de referência
+        reference_points = [
+            (4, 3, 2, 'x'),   # Polegar (usa coordenada x)
+            (8, 6, 7, 'y'),   # Indicador
+            (12, 10, 11, 'y'),  # Médio
+            (16, 14, 15, 'y'),  # Anelar
+            (20, 18, 19, 'y')   # Mínimo
+        ]
 
-    # Pontas dos dedos e suas juntas de referência
-    reference_points = [
-        (4, 3, 2, 'x'),   # Polegar (usa coordenada x)
-        (8, 6, 7, 'y'),   # Indicador
-        (12, 10, 11, 'y'),  # Médio
-        (16, 14, 15, 'y'),  # Anelar
-        (20, 18, 19, 'y')   # Mínimo
-    ]
+        for i, (tip, joint1, joint2, axis) in enumerate(reference_points):
+            if i == 0:  # Polegar
+                # INVERTIDO: polegar para dentro (abaixado) quando está à esquerda da junta
+                if landmarks_list[tip][1] < landmarks_list[joint1][1]:
+                    fingers[0] = 1
+            else:  # Outros dedos
+                if landmarks_list[tip][2] < landmarks_list[joint1][2]:
+                    fingers[i] = 1
 
-    for i, (tip, joint1, joint2, axis) in enumerate(reference_points):
-        if i == 0:  # Polegar
-            # INVERTIDO: polegar para dentro (abaixado) quando está à esquerda da junta
-            if landmarks_list[tip][1] < landmarks_list[joint1][1]:
-                fingers[0] = 1
-        else:  # Outros dedos
-            if landmarks_list[tip][2] < landmarks_list[joint1][2]:
-                fingers[i] = 1
-
-    return fingers
+        return fingers
 
 
-def check_exit_gesture(fingers):
-    """Verifica gesto de saída: todos dedos abaixados."""
-    return (fingers[0] == 1 and
-            all(d == 0 for d in fingers[1:]))
+    def check_exit_gesture(self, fingers):
+        """Verifica gesto de saída: todos dedos abaixados."""
+        return (fingers[0] == 1 and
+                all(d == 0 for d in fingers[1:]))
 
-def check_double_click(fingers):
-    """Verifica gesto de clique duplo: polegar levantado + outros abaixados."""
-    return all(d == 0 for d in fingers)
+    def check_double_click(self, fingers):
+        """Verifica gesto de clique duplo: polegar levantado + outros abaixados."""
+        return all(d == 0 for d in fingers)
 
-def check_scroll_up(fingers):
-    """Verifica gesto de scroll up: Indicador levantado, outros abaixados."""
-    return (fingers[0] == 1 and fingers[1] == 1 and
-            all(d == 0 for d in fingers[2:]))
+    def check_scroll_up(self, fingers):
+        """Verifica gesto de scroll up: Indicador levantado, outros abaixados."""
+        return (fingers[0] == 1 and fingers[1] == 1 and
+                all(d == 0 for d in fingers[2:]))
 
-def check_scroll_down(fingers):
-    """Verifica gesto de scroll down: Mindinho levantado, outros abaixados."""
-    return (fingers[0] == 1 and fingers[4] == 1 and
-            all(d == 0 for d in fingers[1:4]))
+    def check_scroll_down(self, fingers):
+        """Verifica gesto de scroll down: Mindinho levantado, outros abaixados."""
+        return (fingers[0] == 1 and fingers[4] == 1 and
+                all(d == 0 for d in fingers[1:4]))
