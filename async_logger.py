@@ -3,7 +3,7 @@ import time
 from collections import deque
 
 class AsyncLogger:
-    def __init__(self, gesture_logger, calculation_logger, batch_interval=2.0):
+    def __init__(self, gesture_logger, calculation_logger, batch_interval=5.0):
         self.gesture_logger = gesture_logger
         self.calculation_logger = calculation_logger
         self.batch_interval = batch_interval
@@ -59,4 +59,5 @@ class AsyncLogger:
 
     def stop(self):
         self.running = False
+
         self.thread.join()
