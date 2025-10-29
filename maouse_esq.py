@@ -4,6 +4,9 @@ import time
 import autopy
 import pyautogui  # Para scroll e minimizar telas
 from hand_tracking_module_esq import HandDetector
+from gesture_logger import GestureLogger
+from calculation_logger import CalculationLogger
+from async_logger import AsyncLogger
 
 """""""""
 Movimento: Polegar + Indicador + Médio levantados ✌️
@@ -32,16 +35,21 @@ def main():
     camera.set(3, CAM_WIDTH)
     camera.set(4, CAM_HEIGHT)
 
-    # Configurações de detecção
+    # 1.1. Configurações de detecção
     prev_time = 0
     hand_detector = HandDetector(max_hands=1)
 
-    # Configurações de tela e movimento
+    # 1.2. Configurações de tela e movimento
     screen_width, screen_height = autopy.screen.size()
     prev_cursor_x, prev_cursor_y = 0, 0  # Mouse normal
     curr_cursor_x, curr_cursor_y = 0, 0
     prev_drag_x, prev_drag_y = 0, 0  # Arrasto
     curr_drag_x, curr_drag_y = 0, 0
+
+    # 1.3. Conectar as funções
+    gesture_logger = GestureLogger()
+    calculation_logger = CalculationLogger()
+    async_logger = AsyncLogger(gesture_logger, calculation_logger, batch_interval=5.0)  # 5 segundos
 
     # 2. Estados das variáveis
     mouse_locked = False
@@ -80,6 +88,11 @@ def main():
             index_x, index_y = landmarks_list[8][1], landmarks_list[8][2]
             middle_x, middle_y = landmarks_list[12][1], landmarks_list[12][2]
 
+            confidence = getattr(hand_detector, 'detection_confidence', None)
+            async_logger.log_gesture(fingers, landmarks_list, hand_detector, confidence, bounding_box)
+            async_logger.log_calculation('log_finger_positions', landmarks_list)
+            async_logger.log_calculation('log_hand_geometry', landmarks_list)
+
             # 5. Metodo de confiança
             if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
                 conf_text = f"Confianca: {hand_detector.detection_confidence:.1f}%"
@@ -99,6 +112,7 @@ def main():
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                         last_double_click = current_time
                         print("Clique duplo executado!")
+                        async_logger.log_calculation('log_double_click', fingers)
                         time.sleep(0.3)
                     except Exception as e:
                         print(f"Erro no clique duplo: {e}")
@@ -107,6 +121,8 @@ def main():
             elif (fingers[0] == 0 and fingers[2] == 1 and
                   fingers[3] == 1 and fingers[4] == 1):
                 distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
+
+                async_logger.log_calculation('log_distance_calculation', landmarks_list[4], landmarks_list[8], distancia)
 
                 if distancia < DRAG_DISTANCE_THRESHOLD:
                     cv2.circle(frame, (thumb_x, thumb_y), 10, (0, 255, 255), cv2.FILLED)
@@ -134,6 +150,8 @@ def main():
                     autopy.mouse.move(screen_width - curr_drag_x, curr_drag_y)
                     prev_drag_x, prev_drag_y = curr_drag_x, curr_drag_y
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
+                    async_logger.log_calculation('log_drag_operation', fingers, (thumb_x, thumb_y), (index_x, index_y), distancia, drag_active)
+
                 else:
                     if drag_active:
                         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
@@ -171,16 +189,21 @@ def main():
             elif (fingers[1] == 1 and fingers[2] == 1 and
                   all(d == 0 for d in [fingers[3], fingers[4]]) and not drag_active):
 
-                mouse_locked = (fingers[0] == 0)  # Trava quando polegar para o lado (0)
+                mouse_locked = (fingers[0] == 0)
                 if not mouse_locked:
                     cursor_x = (index_x + middle_x) // 2
                     cursor_y = (index_y + middle_y) // 2
 
                     mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
                     mapped_y = np.interp(cursor_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION), (0, screen_height))
+                    
+                    async_logger.log_calculation('log_coordinate_mapping', cursor_x, cursor_y, mapped_x, mapped_y)
 
                     curr_cursor_x = prev_cursor_x + (mapped_x - prev_cursor_x) / SMOOTHENING
                     curr_cursor_y = prev_cursor_y + (mapped_y - prev_cursor_y) / SMOOTHENING
+
+                    async_logger.log_calculation('log_mouse_movement', fingers, (cursor_x, cursor_y), (mapped_x, mapped_y),
+                                           (curr_cursor_x, curr_cursor_y), mouse_locked)
 
                     autopy.mouse.move(screen_width - curr_cursor_x, curr_cursor_y)
                     prev_cursor_x, prev_cursor_y = curr_cursor_x, curr_cursor_y
@@ -286,6 +309,7 @@ def main():
         cv2.imshow('Controle de Mouse por Gestos', frame)
 
     # 11. Finalização
+    async_logger.stop()
     if drag_active:
         autopy.mouse.toggle(autopy.mouse.Button.LEFT, False)
     camera.release()
