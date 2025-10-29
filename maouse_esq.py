@@ -3,9 +3,7 @@ import numpy as np
 import time
 import autopy
 import pyautogui  # Para scroll e minimizar telas
-from hand_tracking_module_esq import HandDetector, check_fingers_up, \
-    check_exit_gesture, check_double_click, check_scroll_up, \
-    check_scroll_down
+from hand_tracking_module_esq import HandDetector
 
 """""""""
 Movimento: Polegar + Indicador + Médio levantados ✌️
@@ -55,6 +53,7 @@ def main():
     scroll_cooldown = 0.5
     exit_gesture_start_time = 0
     exit_gesture_active = False
+    fingers = [0, 0, 0, 0, 0]
 
     if not camera.isOpened():
         print("Não foi possível abrir a câmera.")
@@ -76,12 +75,10 @@ def main():
 
         if landmarks_list:
             # 4. DETECÇÃO DE GESTOS
-            fingers = check_fingers_up(landmarks_list)
+            fingers = hand_detector.check_fingers_up(landmarks_list)
             thumb_x, thumb_y = landmarks_list[4][1], landmarks_list[4][2]
             index_x, index_y = landmarks_list[8][1], landmarks_list[8][2]
             middle_x, middle_y = landmarks_list[12][1], landmarks_list[12][2]
-            ring_x, ring_y = landmarks_list[16][1], landmarks_list[16][2]
-            pinky_x, pinky_y = landmarks_list[20][1], landmarks_list[20][2]
 
             # 5. Metodo de confiança
             if hasattr(hand_detector, 'detection_confidence') and hand_detector.detection_confidence > 0:
@@ -91,7 +88,7 @@ def main():
 
             # 6. GESTOS PRINCIPAIS
             # 6.1. Clique Duplo
-            if check_double_click(fingers) and not drag_active:
+            if hand_detector.check_double_click(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_double_click > DOUBLE_CLICK_COOLDOWN:
                     try:
@@ -146,7 +143,7 @@ def main():
                         print("Arrasto desativado")
 
             # 6.3. Scroll Up
-            elif check_scroll_up(fingers) and not drag_active:
+            elif hand_detector.check_scroll_up(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_scroll > scroll_cooldown:
                     try:
@@ -158,7 +155,7 @@ def main():
                         print(f"Erro no scroll up: {e}")
 
             # 6.4. Scroll Down
-            elif check_scroll_down(fingers) and not drag_active:
+            elif hand_detector.check_scroll_down(fingers) and not drag_active:
                 current_time = time.time()
                 if current_time - last_scroll > scroll_cooldown:
                     try:
@@ -258,7 +255,7 @@ def main():
             break
 
         # Mão fechada
-        if landmarks_list and check_exit_gesture(fingers):
+        if landmarks_list and hand_detector.check_exit_gesture(fingers):
             if not exit_gesture_active:
                 exit_gesture_start_time = time.time()
                 exit_gesture_active = True
