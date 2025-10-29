@@ -32,6 +32,35 @@ class GestureLogger:
             return "GESTO_SAIDA"
         return "GESTO_DESCONHECIDO"
 
+    @staticmethod
+    def get_left_gesture_name(fingers, landmarks_list=None, hand_detector=None):
+        if fingers[0] == 1 and fingers[1] == 1 and fingers[2] == 1:
+            return "MOVIMENTO_MOUSE"
+        elif (fingers[0] == 0 and fingers[2] == 1 and
+              fingers[3] == 1 and fingers[4] == 1):
+            if landmarks_list and hand_detector:
+                distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
+                if distancia < 20:
+                    return "ARRASTO"
+        elif (fingers[0] == 0 and fingers[2] == 1 and
+              all(d == 0 for d in [fingers[1], fingers[3], fingers[4]])):
+            return "CLIQUE_ESQUERDO"
+        elif (fingers[0] == 0 and fingers[1] == 1 and
+              all(d == 0 for d in [fingers[2], fingers[3], fingers[4]])):
+            return "CLIQUE_DIREITO"
+        elif all(d == 0 for d in fingers):
+            return "CLIQUE_DUPLO"
+        elif (fingers[0] == 1 and fingers[1] == 1 and
+              all(d == 0 for d in fingers[2:])):
+            return "SCROLL_UP"
+        elif (fingers[0] == 1 and fingers[4] == 1 and
+              all(d == 0 for d in fingers[1:4])):
+            return "SCROLL_DOWN"
+        elif (fingers[0] == 1 and
+              all(d == 0 for d in fingers[1:])):
+            return "GESTO_SAIDA"
+        return "GESTO_DESCONHECIDO"
+
     def should_log(self, current_time, current_gesture):
         time_ok = current_time - self.last_log_time >= self.log_interval
         gesture_changed = current_gesture != self.last_gesture
