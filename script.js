@@ -407,10 +407,13 @@ async function runMotionKey() {
         return;
     }
     try {
+        const currentUser = JSON.parse(
+            localStorage.getItem('currentUser') || 'null'
+        );
         const res = await fetch(`${API_URL}/run-motionkey`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hand }),
+            body: JSON.stringify({ hand, current_user: currentUser }),
         });
 
         if (!res.ok) {
