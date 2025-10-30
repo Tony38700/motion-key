@@ -3,6 +3,7 @@ import sys
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from pessoa import Pessoa
 from usuario import Usuario
@@ -54,6 +55,8 @@ class Gesture(BaseModel):
     gesture_name: str
     confidence: float
     hand_position: str
+    user_id: Optional[int] = None
+    hand_used: Optional[str] = None
 
 class Calculation(BaseModel):
     timestamp: str
@@ -66,6 +69,7 @@ class Calculation(BaseModel):
 class RunRequest(BaseModel):
     # expected values: "right" or "left" (default: right)
     hand: str = "right"
+    current_user: Optional[dict] = None
 
 @app.post("/self-register")
 def self_register_user(new_user: UserSelfRegister):
@@ -205,11 +209,21 @@ def run_motionkey(req: RunRequest):
 
     try:
         # Use the same Python interpreter that's running the API to avoid "python" vs "python3" issues
+        env = os.environ.copy()
+        if req.current_user and isinstance(req.current_user, dict):
+            try:
+                uid = req.current_user.get('id_pessoa')
+                if uid is not None:
+                    env['USER_ID'] = str(uid)
+            except Exception:
+                pass
+
         result = subprocess.run(
             [sys.executable, script],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
+            env=env,
         )
         return {"detail": f"MotionKey ({hand}) executado com sucesso!", "output": result.stdout}
     except FileNotFoundError:
@@ -224,12 +238,25 @@ def run_motionkey(req: RunRequest):
 def register_gesture(gesture: Gesture):
     gesto = Gesto()
 
+    hand_used_value = None
+    if gesture.hand_used:
+        hw = gesture.hand_used.lower()
+        if hw in ('right', 'direita'):
+            hand_used_value = 'direita'
+        elif hw in ('left', 'esquerda'):
+            hand_used_value = 'esquerda'
+
+    # Use client-provided user_id (English key) mapped to Portuguese DB column id_usuario
+    user_id_value = gesture.user_id if getattr(gesture, 'user_id', None) is not None else None
+
     dados = {
         'data_hora_gesto': gesture.timestamp,
         'dedos': gesture.fingers,
         'nome_gesto': gesture.gesture_name,
         'confianca': gesture.confidence,
-        'posicao_mao':gesture.hand_position
+        'posicao_mao': gesture.hand_position,
+        'id_usuario': user_id_value,
+        'mao_usada': hand_used_value
     }
 
     gesto.cadastrar_no_banco(dados, DB_PARAMS)
