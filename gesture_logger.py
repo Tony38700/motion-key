@@ -8,6 +8,9 @@ class GestureLogger:
         self.log_interval = log_interval
         self.last_log_time = 0
         self.last_gesture = None
+        # optional attributes set by the motion script
+        self.user_id = None
+        self.hand_used = None
 
     @staticmethod
     def get_gesture_name(fingers, landmarks_list=None, hand_detector=None):
@@ -93,6 +96,9 @@ class GestureLogger:
             "gesture_name": current_gesture,
             "confidence": float(confidence or 0.0),
             "hand_position": json.dumps(bounding_box or {}),
+            # include optional user/hand info if set by the caller
+            "user_id": self.user_id,
+            "hand_used": self.hand_used,
         }
 
         success = self.send_to_api(gesture_data)
