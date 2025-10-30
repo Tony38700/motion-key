@@ -10,15 +10,19 @@ class Gesto:
                 dedos,
                 nome_gesto,
                 confianca,
-                posicao_mao
-            ) VALUES (%s, %s, %s, %s, %s);
+                posicao_mao,
+                id_usuario,
+                mao_usada
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s);
         ''',
             (
                 dados["data_hora_gesto"],
                 dados["dedos"],
                 dados["nome_gesto"],
                 dados["confianca"],
-                dados["posicao_mao"]
+                dados["posicao_mao"],
+                dados.get("id_usuario"),
+                dados.get("mao_usada")
             )
         )
         conn.commit()

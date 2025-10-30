@@ -7,6 +7,7 @@ from hand_tracking_module import HandDetector
 from gesture_logger import GestureLogger
 from calculation_logger import CalculationLogger
 from async_logger import AsyncLogger
+import os
 
 
 """""""""
@@ -49,6 +50,15 @@ def main():
 
     # 1.3. Conectar as funções
     gesture_logger = GestureLogger()
+    # If started by the API, USER_ID will be injected in the environment.
+    uid_env = os.environ.get('USER_ID')
+    if uid_env:
+        try:
+            gesture_logger.user_id = int(uid_env)
+        except ValueError:
+            gesture_logger.user_id = None
+    # This script corresponds to the right hand
+    gesture_logger.hand_used = 'right'
     calculation_logger = CalculationLogger()
     async_logger = AsyncLogger(gesture_logger, calculation_logger, batch_interval=5.0)  # 5 segundos
 
