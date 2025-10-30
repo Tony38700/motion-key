@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS gestos (
     dedos TEXT NOT NULL,
     nome_gesto TEXT NOT NULL,
     confianca REAL,
-    posicao_mao TEXT
+    posicao_mao TEXT,
+    id_usuario INT,
+    mao_usada VARCHAR(10)
 );
 
 CREATE TABLE IF NOT EXISTS calculos (
