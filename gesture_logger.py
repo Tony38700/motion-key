@@ -83,7 +83,13 @@ class GestureLogger:
 
     def log_gesture(self, fingers, landmarks_list=None, hand_detector=None, confidence=None, bounding_box=None):
         current_time = time.time()
-        current_gesture = self.get_gesture_name(fingers, landmarks_list, hand_detector)
+
+        if self.hand_used == 'left':
+            current_gesture = self.get_left_gesture_name(fingers, landmarks_list, hand_detector)
+        elif self.hand_used == 'right':
+            current_gesture = self.get_gesture_name(fingers, landmarks_list, hand_detector)
+        else:
+            current_gesture = self.get_gesture_name(fingers, landmarks_list, hand_detector)
 
         if current_gesture == "GESTO_DESCONHECIDO":
             return False
@@ -96,7 +102,6 @@ class GestureLogger:
             "gesture_name": current_gesture,
             "confidence": float(confidence or 0.0),
             "hand_position": json.dumps(bounding_box or {}),
-            # include optional user/hand info if set by the caller
             "user_id": self.user_id,
             "hand_used": self.hand_used,
         }
