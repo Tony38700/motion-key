@@ -66,7 +66,7 @@ def main():
     last_click = 0
     last_double_click = 0
     last_scroll = 0
-    clique_cooldown = 1.0
+    clique_cooldown = 0.3
     scroll_cooldown = 0.5
     exit_gesture_start_time = 0
     exit_gesture_active = False
@@ -129,25 +129,32 @@ def main():
             # 6.2. Arrasto
             elif (fingers[0] == 0 and fingers[2] == 1 and
                   fingers[3] == 1 and fingers[4] == 1):
+
                 distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
 
-                async_logger.log_calculation('log_distance_calculation', landmarks_list[4], landmarks_list[8], distancia)
-
-                if distancia < DRAG_DISTANCE_THRESHOLD:
-                    cv2.circle(frame, (thumb_x, thumb_y), 10, (0, 255, 255), cv2.FILLED)
-                    cv2.circle(frame, (index_x, index_y), 10, (0, 255, 255), cv2.FILLED)
-                    cv2.line(frame, (thumb_x, thumb_y), (index_x, index_y), (0, 255, 255), 2)
-                    cv2.putText(frame, f"Dist: {int(distancia)}", (thumb_x, thumb_y - 15),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                cv2.circle(frame, (thumb_x, thumb_y), 10, (0, 255, 255), cv2.FILLED)
+                cv2.circle(frame, (index_x, index_y), 10, (0, 255, 255), cv2.FILLED)
+                cv2.line(frame, (thumb_x, thumb_y), (index_x, index_y), (0, 255, 255), 2)
+                cv2.putText(frame, f"Dist: {int(distancia)}", (thumb_x, thumb_y - 15),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
 
                 if distancia < DRAG_DISTANCE_THRESHOLD:
                     if not drag_active:
+                        cursor_x, cursor_y = index_x, index_y
+                        mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION),
+                                             (0, screen_width))
+                        mapped_y = np.interp(cursor_y, (FRAME_REDUCTION, CAM_HEIGHT - FRAME_REDUCTION),
+                                             (0, screen_height))
+
                         autopy.mouse.toggle(autopy.mouse.Button.LEFT, True)
                         drag_active = True
+
+                        prev_drag_x, prev_drag_y = mapped_x, mapped_y
+
                         cv2.putText(frame, "ARRASTANDO", (10, 150),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                        print("Arrasto ativado")
-                        prev_drag_x, prev_drag_y = index_x, index_y
+                        print(f"Arrasto ativado em ({mapped_x:.1f}, {mapped_y:.1f})")
+                        time.sleep(0.05)
 
                     cursor_x, cursor_y = index_x, index_y
                     mapped_x = np.interp(cursor_x, (FRAME_REDUCTION, CAM_WIDTH - FRAME_REDUCTION), (0, screen_width))
@@ -158,8 +165,8 @@ def main():
 
                     autopy.mouse.move(screen_width - curr_drag_x, curr_drag_y)
                     prev_drag_x, prev_drag_y = curr_drag_x, curr_drag_y
+
                     cv2.circle(frame, (cursor_x, cursor_y), 12, (255, 0, 255), cv2.FILLED)
-                    async_logger.log_calculation('log_drag_operation', fingers, (thumb_x, thumb_y), (index_x, index_y), distancia, drag_active)
 
                 else:
                     if drag_active:
@@ -232,7 +239,6 @@ def main():
                 if current_time - last_click > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.RIGHT)
-                        time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE DIREITO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
                         last_click = current_time
@@ -249,7 +255,6 @@ def main():
                 if current_time - last_click > clique_cooldown:
                     try:
                         autopy.mouse.click(autopy.mouse.Button.LEFT)
-                        time.sleep(1.0)  # Adiciona delay de 1s
                         cv2.putText(frame, "CLIQUE ESQUERDO!", (10, 210),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                         last_click = current_time
