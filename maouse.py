@@ -10,17 +10,6 @@ from async_logger import AsyncLogger
 import os
 
 
-"""""""""
-Movimento: Polegar + Indicador + Médio levantados ✌️
-Arrasto: Polegar abaixado + Indicador tocando no polegar + outros 3 levantados 👌 
-Clique Esquerdo: Médio levantado + outros abaixados 🖱️🖕
-Clique Direito: Indicador levantado + outros abaixados 👆🖱️
-Clique Duplo: Todos os dedos abaixados 🖱️👍(-90º)🖱️
-Scroll Up: Polegar + Indicador levantados 👆
-Scroll Down: Polegar + Mindinho levantados 🤟
-Sair: Polegar levantado + outros abaixados (3 segundos) ✊ 
-"""""""""
-
 # Configurações/constantes
 CAM_WIDTH, CAM_HEIGHT = 640, 480
 FRAME_REDUCTION = 100
@@ -129,8 +118,9 @@ def main():
             # 6.2. Arrasto
             elif (fingers[0] == 0 and fingers[2] == 1 and
                   fingers[3] == 1 and fingers[4] == 1):
-
                 distancia = hand_detector.get_distance(landmarks_list[4], landmarks_list[8])
+
+                async_logger.log_calculation('log_distance_calculation', landmarks_list[4], landmarks_list[8], distancia)
 
                 cv2.circle(frame, (thumb_x, thumb_y), 10, (0, 255, 255), cv2.FILLED)
                 cv2.circle(frame, (index_x, index_y), 10, (0, 255, 255), cv2.FILLED)
